@@ -1,7 +1,6 @@
 package model
 
-class Board {
-    private val boardArray = Array(8) { Array<Piece?>(8) { null } }
+class Board(private val boardArray: Array<Array<Piece?>>) {
     val cost: Int
         get() {
             var result = 0
@@ -13,19 +12,29 @@ class Board {
             return 0
         }
 
-    fun getAvailableTurns(): Board {
-        val availableTurns = HashMap<Piece, ArrayList<Move>>()
+    fun getAvailableTurns(): List<Board> {
+        val result = ArrayList<Board>()
         for (i in boardArray.indices) {
             for (j in boardArray[i].indices) {
                 if (boardArray[i][j] != null) {
-                    val piece = boardArray[i][j]
+                    val piece = boardArray[i][j] ?: continue
+                    for (move in piece.type.moves) {
+                        val newBoardArray =
+                                movePiece(piece, move) ?: continue
+                        result.add(Board(newBoardArray))
+                    }
                 }
             }
         }
+        return result
     }
 
-    private fun doesCellExist(): Boolean {
-        
-        return false
+    private fun movePiece(piece: Piece, move: Move): Array<Array<Piece?>>? {
+        if (piece.x + move.x !in boardArray[0].indices ||
+                piece.y + move.y !in boardArray.indices) return null
+        val newBoard = boardArray.clone()
+        newBoard[piece.x][piece.y] = null
+        newBoard[piece.x + move.x][piece.y + move.y] = piece
+        return newBoard
     }
 }
