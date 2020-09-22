@@ -2,6 +2,7 @@ package model
 
 data class Piece (
     val type: PieceType,
-    val x: Int,
-    val y: Int
+    var x: Int,
+    var y: Int,
+    val color: Int
 )
