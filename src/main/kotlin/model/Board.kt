@@ -56,9 +56,8 @@ class Board(var turnsMade: Int, val boardArray: Array<Array<Piece?>> = Array(8) 
             if (-1 !in boardArray.indices) println("its okay")
             val enemyPos = piece.pos + move.dir
             val newPos = piece.pos + move.dir * 2
+            if (newPos.x !in boardArray.indices || newPos.y !in boardArray[0].indices) return false
             if (
-                    newPos.y in boardArray.indices &&
-                    newPos.x in boardArray[newPos.y].indices &&
                     boardArray[enemyPos.x][enemyPos.y] == null &&
                     boardArray[enemyPos.x][enemyPos.y]!!.color != piece.color ||
                     boardArray[newPos.x][newPos.y] != null

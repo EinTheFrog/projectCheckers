@@ -13,8 +13,7 @@ import tornadofx.style
 import view.Cell
 import view.Checker
 
-class MyController: Controller() {
-    val board = Board(0)
+class MyController(val board: Board): Controller() {
     val player = Player(board)
     var checkersCell: Cell? = null
     var isPlayerTurn = true

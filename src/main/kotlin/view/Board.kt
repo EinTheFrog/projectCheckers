@@ -7,6 +7,7 @@ import javafx.geometry.Pos
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
+import model.Board
 import model.Piece
 import model.PieceType
 import model.Vector
@@ -18,7 +19,8 @@ import tornadofx.rectangle
 class BoardView(
     heightProperty: ReadOnlyDoubleProperty,
     widthProperty: ReadOnlyDoubleProperty,
-    controller: MyController
+    controller: MyController,
+    val board: Board
 ): StackPane() {
     private val cells = mutableMapOf<Pair<Int, Int>, Cell>()
     init {
@@ -51,26 +53,26 @@ class BoardView(
         for (i in 0..7) {
             for (j in 0..1) {
                 val cell = cells[Pair(j, i)]
-                cell?.add(
-                        Checker(
-                                cell.heightProperty(),
-                                cell.widthProperty(),
-                                Color.BLACK,
-                                Piece(PieceType.CHECKER, Vector(j, i), 0)
-                        )
+                val checker =  Checker(
+                        cell!!.heightProperty(),
+                        cell!!.widthProperty(),
+                        Color.BLACK,
+                        Piece(PieceType.CHECKER, Vector(j, i), 0)
                 )
+                cell?.add(checker)
+                board.boardArray[j][i] = checker.piece
             }
 
             for (j in 6..7) {
                 val cell = cells[Pair(j, i)]
-                cell?.add(
-                        Checker(
-                                cell.heightProperty(),
-                                cell.widthProperty(),
-                                Color.WHITE,
-                                Piece(PieceType.CHECKER, Vector(j, i), 1)
-                        )
+                val checker =  Checker(
+                        cell!!.heightProperty(),
+                        cell!!.widthProperty(),
+                        Color.WHITE,
+                        Piece(PieceType.CHECKER, Vector(j, i), 1)
                 )
+                cell?.add(checker)
+                board.boardArray[j][i] = checker.piece
             }
         }
     }
