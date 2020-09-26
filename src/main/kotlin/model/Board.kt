@@ -3,7 +3,7 @@ package model
 import java.lang.Exception
 import java.lang.IllegalArgumentException
 
-class Board(private val boardArray: Array<Array<Piece?>>, var turnsMade: Int) {
+class Board(var turnsMade: Int, val boardArray: Array<Array<Piece?>> = Array(8) {Array(8) {null} }) {
     val cost: Int
         get() {
             var result = 0
@@ -25,9 +25,9 @@ class Board(private val boardArray: Array<Array<Piece?>>, var turnsMade: Int) {
                     for (move in piece.type.moves) {
                         val newBoardArray = boardArray.clone()
                         if (newBoardArray.attackEnemyPiece(piece, move)) {
-                            result.add(Board(newBoardArray, turnsMade + 1))
+                            result.add(Board(turnsMade + 1, newBoardArray))
                         } else if (newBoardArray.moveMyPiece(piece, move)) {
-                            result.add(Board(newBoardArray, turnsMade + 1))
+                            result.add(Board(turnsMade + 1, newBoardArray))
                         }
                     }
                 }
@@ -53,57 +53,51 @@ class Board(private val boardArray: Array<Array<Piece?>>, var turnsMade: Int) {
 
     fun canPieceAttack(piece: Piece): Boolean {
         for (move in piece.type.moves) {
-            val enemyX = piece.x + move.x * 2
-            val enemyY = piece.y + move.y * 2
-            val newX = piece.x + move.x
-            val newY = piece.y + move.y
+            if (-1 !in boardArray.indices) println("its okay")
+            val enemyPos = piece.pos + move.dir
+            val newPos = piece.pos + move.dir * 2
             if (
-                    newX !in boardArray[0].indices &&
-                    newY !in boardArray.indices &&
-                    boardArray[enemyX][enemyY] == null
-                    &&  boardArray[enemyX][enemyY]!!.color != piece.color ||
-                    boardArray[newX][newY] != null
+                    newPos.y in boardArray.indices &&
+                    newPos.x in boardArray[newPos.y].indices &&
+                    boardArray[enemyPos.x][enemyPos.y] == null &&
+                    boardArray[enemyPos.x][enemyPos.y]!!.color != piece.color ||
+                    boardArray[newPos.x][newPos.y] != null
             ) return true
         }
         return false
     }
 
     private fun Array<Array<Piece?>>.moveMyPiece(piece: Piece, move: Move): Boolean {
-        val newX = piece.x + move.x
-        val newY = piece.y + move.y
-
+        val newPos = piece.pos + move.dir
         if (
-                newX !in boardArray[0].indices ||
-                newY !in boardArray.indices ||
-                boardArray[newX][newY] != null
+                newPos.x !in boardArray[0].indices ||
+                newPos.y !in boardArray.indices ||
+                boardArray[newPos.x][newPos.y] != null
         ) return false
 
-        this.changePiecePosition(piece.x, piece.y, newX, newY)
+        this.changePiecePosition(piece.pos, newPos)
 
         return true
     }
 
     private fun Array<Array<Piece?>>.attackEnemyPiece(piece: Piece, move: Move): Boolean {
-        val enemyX = piece.x + move.x * 2
-        val enemyY = piece.y + move.y * 2
-        val newX = piece.x + move.x
-        val newY = piece.y + move.y
+        val enemyPos = piece.pos + move.dir * 2
+        val newPos = piece.pos + move.dir * 2
 
         if (!canPieceAttack(piece)) return false
 
-        this.changePiecePosition(piece.x, piece.y, newX, newY)
-        this[enemyX][enemyY] = null
+        this.changePiecePosition(piece.pos, newPos)
+        this[enemyPos.x][enemyPos.y] = null
 
         attackEnemyPiece(piece, move)
 
         return true
     }
 
-    private fun Array<Array<Piece?>>.changePiecePosition(oldX: Int, oldY: Int, newX: Int, newY: Int) {
-        val piece = this[oldX][oldY] ?: throw IllegalArgumentException("There is no piece at this position")
-        this[oldX][oldY] = null
-        this[newX][newY] = piece
-        piece.x = newX
-        piece.y = newY
+    private fun Array<Array<Piece?>>.changePiecePosition(oldPos: Vector, newPos: Vector) {
+        val piece = this[oldPos.x][oldPos.y] ?: throw IllegalArgumentException("There is no piece at this position")
+        this[oldPos.x][oldPos.y] = null
+        this[newPos.x][newPos.y] = piece
+        piece.pos = newPos
     }
 }

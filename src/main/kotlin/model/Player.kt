@@ -1,7 +1,6 @@
 package model
-
-class Player {
-    fun makeTurn(board: Board, piece: Piece, move: Move) {
+open class Player(val board: Board) {
+    fun makeTurn(piece: Piece, move: Move) {
         if (board.canPieceAttack(piece)) {
             board.attack(piece, move)
         } else {

@@ -2,17 +2,16 @@ package view
 
 import controller.MyController
 import javafx.beans.binding.DoubleBinding
+import javafx.scene.Node
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
-import tornadofx.Controller
-import tornadofx.add
-import tornadofx.gridpaneConstraints
-import tornadofx.rectangle
+import model.Vector
+import tornadofx.*
 
 class Cell(
         heightProperty: DoubleBinding,
         widthProperty: DoubleBinding,
-        coords: Pair<Int, Int>,
+        val coords: Vector,
         color: Color,
         controller: MyController
 ): StackPane() {
@@ -25,16 +24,16 @@ class Cell(
             fill = color
         }
         gridpaneConstraints {
-            columnRowIndex(coords.second, coords.first)
+            columnRowIndex(coords.x, coords.y)
         }
         setOnMouseClicked {
             if (checker != null) controller.chooseChecker(this)
-            else controller.moveChecker(this)
+            else controller.makeMove(this)
         }
     }
 
-    fun addChecker(checker: Checker) {
+    fun add(checker: Checker) {
         this.checker = checker
-        add(checker)
+        add(checker as Node)
     }
 }

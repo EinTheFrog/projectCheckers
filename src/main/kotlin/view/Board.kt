@@ -7,12 +7,15 @@ import javafx.geometry.Pos
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
+import model.Piece
+import model.PieceType
+import model.Vector
 import tornadofx.Controller
 import tornadofx.add
 import tornadofx.gridpane
 import tornadofx.rectangle
 
-class Board(
+class BoardView(
     heightProperty: ReadOnlyDoubleProperty,
     widthProperty: ReadOnlyDoubleProperty,
     controller: MyController
@@ -37,7 +40,7 @@ class Board(
             for (i in 0..7) {
                 for (j in 0..7) {
                     val color = if ((j + i) % 2 == 0) Color.DARKGRAY else Color.GRAY
-                    val cell = Cell(cellHeight, cellWidth, Pair(j, i), color, controller)
+                    val cell = Cell(cellHeight, cellWidth, Vector(i, j), color, controller)
                     cells[Pair(j, i)] = cell
                     add(cell)
                 }
@@ -48,7 +51,26 @@ class Board(
         for (i in 0..7) {
             for (j in 0..1) {
                 val cell = cells[Pair(j, i)]
-                cell?.addChecker(Checker(cell.heightProperty(), cell.widthProperty(), Color.BLACK))
+                cell?.add(
+                        Checker(
+                                cell.heightProperty(),
+                                cell.widthProperty(),
+                                Color.BLACK,
+                                Piece(PieceType.CHECKER, Vector(j, i), 0)
+                        )
+                )
+            }
+
+            for (j in 6..7) {
+                val cell = cells[Pair(j, i)]
+                cell?.add(
+                        Checker(
+                                cell.heightProperty(),
+                                cell.widthProperty(),
+                                Color.WHITE,
+                                Piece(PieceType.CHECKER, Vector(j, i), 1)
+                        )
+                )
             }
         }
     }
