@@ -1,17 +1,47 @@
 package model
 
 enum class Move {
-    UP_LEFT {
-        override val dir = Vector(-1, 1)
+    GO_UP_LEFT {
+        override val vector = Vector(-1, -1)
+        override val isAttack = false
+        override val direction = Direction.UP
     },
-    UP_RIGHT {
-        override val dir = Vector(1, 1)
+    GO_UP_RIGHT {
+        override val vector = Vector(1, -1)
+        override val isAttack = false
+        override val direction = Direction.UP
     },
-    DOWN_RIGHT{
-        override val dir = Vector(-1, -1)
+    GO_DOWN_RIGHT{
+        override val vector = Vector(1, 1)
+        override val isAttack = false
+        override val direction = Direction.DOWN
     },
-    DOWN_LEFT {
-        override val dir = Vector(-1, -1)
+    GO_DOWN_LEFT {
+        override val vector = Vector(-1, 1)
+        override val isAttack = false
+        override val direction = Direction.DOWN
+    },
+    ATTACK_UP_LEFT {
+        override val vector = Vector(-2, -2)
+        override val isAttack = true
+        override val direction = Direction.UP
+    },
+    ATTACK_UP_RIGHT {
+        override val vector = Vector(2, -2)
+        override val isAttack = true
+        override val direction = Direction.UP
+    },
+    ATTACK_DOWN_RIGHT{
+        override val vector = Vector(2, 2)
+        override val isAttack = true
+        override val direction = Direction.DOWN
+    },
+    ATTACK_DOWN_LEFT {
+        override val vector = Vector(-2, 2)
+        override val isAttack = true
+        override val direction = Direction.DOWN
     };
-    public abstract val dir: Vector
+    public abstract val direction: Direction
+    public abstract val vector: Vector
+    public abstract val isAttack: Boolean
 }

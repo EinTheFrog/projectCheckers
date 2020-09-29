@@ -7,7 +7,7 @@ import javafx.scene.shape.Ellipse
 import model.Piece
 import tornadofx.*
 
-class Checker(
+class PieceView(
         cellHeight: ReadOnlyDoubleProperty,
         cellWidth: ReadOnlyDoubleProperty,
         color: Color,

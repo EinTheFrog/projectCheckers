@@ -1,4 +1,8 @@
 package model
 
-class AI(board: Board): Player(board) {
+class AI() {
+    val depth = 5
+    fun makeTurn(board: Board, maximizingColor: Int): {
+
+    }
 }

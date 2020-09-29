@@ -2,32 +2,50 @@ package model
 
 import java.lang.Exception
 import java.lang.IllegalArgumentException
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
-class Board(var turnsMade: Int, val boardArray: Array<Array<Piece?>> = Array(8) {Array(8) {null} }) {
+class Board(
+        var turnsMade: Int,
+        private val boardArray: Array<Array<Cell>> = Array(8) {Array(8) { Cell(null) } }
+) {
     val cost: Int
         get() {
             var result = 0
             for (i in boardArray.indices) {
                 for (j in boardArray[i].indices) {
-                    result += boardArray[i][j]?.type?.cost ?: 0
+                    result += boardArray[i][j].piece?.type?.cost ?: 0
                 }
             }
             return 0
         }
 
-    fun makeAvailableTurns(): List<Board> {
-        val result = ArrayList<Board>()
+    fun getAvailableTurns(): Map<Piece, List<Move>> {
+        val result = HashMap<Piece, MutableList<Move>>()
         for (i in boardArray.indices) {
             for (j in boardArray[i].indices) {
-                if (boardArray[i][j] != null && boardArray[i][j]!!.color == turnsMade % 2) {
-                    val piece = boardArray[i][j] ?: continue
-
-                    for (move in piece.type.moves) {
-                        val newBoardArray = boardArray.clone()
-                        if (newBoardArray.attackEnemyPiece(piece, move)) {
-                            result.add(Board(turnsMade + 1, newBoardArray))
-                        } else if (newBoardArray.moveMyPiece(piece, move)) {
-                            result.add(Board(turnsMade + 1, newBoardArray))
+                if (boardArray[i][j].piece == null || boardArray[i][j].piece!!.color != turnsMade % 2) continue
+                val piece = boardArray[i][j].piece ?: continue
+                //просматриваем все возможные ходы фигуры
+                for (move in Move.values()) {
+                    val newBoardArray = boardArray.clone()
+                    if (canPieceAttack(piece, move)) {
+                        //если фигура может атаковать,
+                        // то она обязана атаковать (а значит мы не можем просто переместить ее)
+                        if (!result.containsKey(piece)) {
+                            result[piece] = mutableListOf(move)
+                        } else {
+                            if (!result[piece]!!.last().isAttack) {
+                                result[piece]!!.clear()
+                            }
+                            result[piece]!!.add(move)
+                        }
+                    } else if (newBoardArray.moveMyPiece(piece, move)) {
+                        if (!result.containsKey(piece)) {
+                            result[piece] = mutableListOf(move)
+                        } else if (!result[piece]!!.last().isAttack) {
+                            result[piece]!!.add(move)
                         }
                     }
                 }
@@ -36,42 +54,37 @@ class Board(var turnsMade: Int, val boardArray: Array<Array<Piece?>> = Array(8) 
         return result
     }
 
-    fun movePiece(piece: Piece, move: Move) {
-        if (canPieceAttack(piece)) {
-            throw Exception("It is illegal to move piece when you can attack")
-        }
-        if (!boardArray.moveMyPiece(piece, move)) {
-            throw IllegalArgumentException("Illegal move was provided to move piece")
-        }
-    }
-
-    fun attack(piece: Piece, move: Move) {
-        if (!boardArray.attackEnemyPiece(piece, move)) {
-            throw IllegalArgumentException("Illegal move was provided to attack")
-        }
-    }
-
-    fun canPieceAttack(piece: Piece): Boolean {
-        for (move in piece.type.moves) {
-            if (-1 !in boardArray.indices) println("its okay")
-            val enemyPos = piece.pos + move.dir
-            val newPos = piece.pos + move.dir * 2
-            if (newPos.x !in boardArray.indices || newPos.y !in boardArray[0].indices) return false
-            if (
-                    boardArray[enemyPos.x][enemyPos.y] == null &&
-                    boardArray[enemyPos.x][enemyPos.y]!!.color != piece.color ||
-                    boardArray[newPos.x][newPos.y] != null
-            ) return true
-        }
+    fun canPieceAttack(piece: Piece, move: Move): Boolean {
+        val enemyPos = piece.pos + move.vector / 2
+        val newPos = piece.pos + move.vector
+        if (
+                (piece.direction == move.direction ||
+                piece.type == PieceType.KING) &&
+                newPos.x in boardArray.indices &&
+                newPos.y in boardArray[0].indices &&
+                boardArray[enemyPos.x][enemyPos.y].piece != null &&
+                boardArray[enemyPos.x][enemyPos.y].piece!!.color != piece.color &&
+                boardArray[newPos.x][newPos.y].piece != null
+        ) return true
         return false
     }
 
-    private fun Array<Array<Piece?>>.moveMyPiece(piece: Piece, move: Move): Boolean {
-        val newPos = piece.pos + move.dir
+    fun canPieceMove(piece: Piece, move: Move): Boolean {
+        val newPos = piece.pos + move.vector
         if (
-                newPos.x !in boardArray[0].indices ||
-                newPos.y !in boardArray.indices ||
-                boardArray[newPos.x][newPos.y] != null
+                newPos.x !in boardArray.indices ||
+                newPos.y !in boardArray[0].indices ||
+                boardArray[newPos.x][newPos.y].piece != null
+        ) return false
+    }
+
+    private fun Array<Array<Cell>>.movePiece(piece: Piece, move: Move) {
+        if (move.isAttack) throw IllegalArgumentException("Can't move with attack move")
+        val newPos = piece.pos + move.vector
+        if (
+                newPos.x !in boardArray.indices ||
+                newPos.y !in boardArray[0].indices ||
+                boardArray[newPos.x][newPos.y].piece != null
         ) return false
 
         this.changePiecePosition(piece.pos, newPos)
@@ -79,24 +92,29 @@ class Board(var turnsMade: Int, val boardArray: Array<Array<Piece?>> = Array(8) 
         return true
     }
 
-    private fun Array<Array<Piece?>>.attackEnemyPiece(piece: Piece, move: Move): Boolean {
-        val enemyPos = piece.pos + move.dir * 2
-        val newPos = piece.pos + move.dir * 2
+    private fun Array<Array<Cell>>.attackEnemyPiece(piece: Piece, move: Move) {
+        if (!move.isAttack) throw IllegalArgumentException("Can't attack with non attack move")
+        if (!canPieceAttack(piece, move)) throw IllegalArgumentException("Can't attack like that")
 
-        if (!canPieceAttack(piece)) return false
+        val enemyPos = piece.pos + move.vector / 2
+        val newPos = piece.pos + move.vector
 
         this.changePiecePosition(piece.pos, newPos)
-        this[enemyPos.x][enemyPos.y] = null
-
-        attackEnemyPiece(piece, move)
-
-        return true
+        this[enemyPos.x][enemyPos.y].piece = null
     }
 
-    private fun Array<Array<Piece?>>.changePiecePosition(oldPos: Vector, newPos: Vector) {
-        val piece = this[oldPos.x][oldPos.y] ?: throw IllegalArgumentException("There is no piece at this position")
-        this[oldPos.x][oldPos.y] = null
-        this[newPos.x][newPos.y] = piece
+    private fun Array<Array<Cell>>.changePiecePosition(oldPos: Vector, newPos: Vector) {
+        val piece = this[oldPos.x][oldPos.y].piece ?: throw IllegalArgumentException("There is no piece at this position")
+
+        this[oldPos.x][oldPos.y].piece = null
+        this[newPos.x][newPos.y].piece = piece
         piece.pos = newPos
+    }
+
+
+    operator fun get(x: Int, y: Int) = boardArray[x][y]
+
+    operator fun set(x: Int, y: Int, piece: Piece) {
+        boardArray[x][y].piece = piece
     }
 }

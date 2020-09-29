@@ -1,49 +1,64 @@
 package controller
 
-import javafx.scene.effect.Bloom
-import javafx.scene.paint.Color
-import model.Board
-import model.Move
-import model.Player
-import model.Vector
+import model.*
 import tornadofx.Controller
-import tornadofx.add
-import tornadofx.box
-import tornadofx.style
-import view.Cell
-import view.Checker
+import view.CellView
+import view.PieceView
 
 class MyController(val board: Board): Controller() {
     val player = Player(board)
-    var checkersCell: Cell? = null
+    val ai = AI()
+    var chosenCell: CellView? = null
     var isPlayerTurn = true
+    val moves = mutableListOf<Move>()
 
-    fun chooseChecker(checkersCell: Cell?) {
-        this.checkersCell?.checker?.glow(false)
-        if (!isPlayerTurn || checkersCell?.checker == null) return
-
-        this.checkersCell = checkersCell
-        checkersCell.checker!!.glow(true)
+    fun clickOnCell(cell: CellView) {
+        if (!isPlayerTurn) return
+        val piece = cell.piece
+        if (piece != null) {
+            chooseCellWithPiece(cell)
+        } else if (chosenCell?.piece != null) {
+            val move = defineCorrectMove(chosenCell!!.coords, cell.coords)
+            if (move != null) {
+                moves.add(move)
+                if (move.isAttack) {
+                    movePiece(cell)
+                } else {
+                    makeTurn(Turn(chosenCell!!.piece!!.piece, moves), cell)
+                }
+            }
+        }
+    }
+    fun chooseCellWithPiece(cell: CellView?) {
+        chosenCell?.piece?.glow(false)
+        chosenCell = cell
+        chosenCell?.piece?.glow(true)
     }
 
-    fun makeMove(newCell: Cell) {
-        val move = defineCorrectMove(checkersCell!!, newCell)
-        if (checkersCell?.checker == null || move == null) return
+    private fun makeTurn(turn: Turn, newCell: CellView) {
+        player.makeTurn(turn)
+        chosenCell?.piece?.glow(false)
+        movePiece(newCell)
+        moves.clear()
+    }
 
-        player.makeTurn(checkersCell!!.checker!!.piece, move)
-
-        checkersCell!!.checker!!.glow(false)
-        newCell.add(checkersCell!!.checker!!)
-        checkersCell = null
+    private fun movePiece(newCell: CellView) {
+        newCell.piece = chosenCell?.piece
+        chosenCell?.piece = null
+        chosenCell = null
         isPlayerTurn = false
     }
 
-    private fun defineCorrectMove(curCell: Cell, newCell: Cell): Move? {
-        return when(newCell.coords - curCell.coords) {
-            Vector(1, 1) -> Move.UP_RIGHT
-            Vector(-1, 1) -> Move.UP_LEFT
-            Vector(1, -1) -> Move.DOWN_RIGHT
-            Vector(-1, -1) -> Move.DOWN_LEFT
+    private fun defineCorrectMove(curPos: Vector, newPos: Vector): Move? {
+        return when(newPos - curPos) {
+            Vector(1, 1) -> Move.MOVE_DOWN_RIGHT
+            Vector(-1, 1) -> Move.MOVE_DOWN_LEFT
+            Vector(1, -1) -> Move.MOVE_UP_RIGHT
+            Vector(-1, -1) -> Move.MOVE_UP_LEFT
+            Vector(2, 2) -> Move.ATTACK_DOWN_RIGHT
+            Vector(-2, 2) -> Move.ATTACK_DOWN_LEFT
+            Vector(2, -2) -> Move.ATTACK_UP_RIGHT
+            Vector(-2, -2) -> Move.ATTACK_UP_LEFT
             else -> null
         }
     }

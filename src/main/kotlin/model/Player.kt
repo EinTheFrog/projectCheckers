@@ -1,10 +1,14 @@
 package model
 open class Player(val board: Board) {
-    fun makeTurn(piece: Piece, move: Move) {
-        if (board.canPieceAttack(piece)) {
-            board.attack(piece, move)
+    fun makeTurn(turn: Turn) {
+        if (board.canPieceAttack(turn.piece)) {
+            //игрок может атаковать фигурой несколько раз подряд
+            for (move in turn.moves) {
+                board.attack(turn.piece, move)
+            }
         } else {
-            board.movePiece(piece, move)
+            //игрок может двинуть фигуру только один раз подряд
+            board.movePiece(turn.piece, turn.moves.first())
         }
         board.turnsMade++
     }

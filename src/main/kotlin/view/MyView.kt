@@ -12,14 +12,13 @@ class MyView: View() {
         val pHeight = this.heightProperty()
         val pWidth = this.widthProperty()
         val board = BoardView(pHeight, pWidth, controller, board)
-        board.addCheckers()
         center {
             add(board)
         }
         isFocusTraversable = false
         setOnKeyPressed {
             when(it.code) {
-                KeyCode.ESCAPE -> controller.chooseChecker(null)
+                KeyCode.ESCAPE -> controller.chooseCellWithPiece(null)
                 KeyCode.ENTER -> controller.isPlayerTurn = true
             }
 
