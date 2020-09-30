@@ -19,8 +19,8 @@ import tornadofx.rectangle
 class BoardView(
         heightProperty: ReadOnlyDoubleProperty,
         widthProperty: ReadOnlyDoubleProperty,
-        controller: MyController,
-        private val board: Board
+        val board: Board,
+        onCellClick: (CellView) -> Unit
 ): StackPane() {
     private val cells = Array(8) {Array<CellView?>(8) {null} }
     init {
@@ -42,11 +42,17 @@ class BoardView(
             for (i in 0..7) {
                 for (j in 0..7) {
                     val color = if ((i + j) % 2 == 0) Color.DARKGRAY else Color.GRAY
-                    val cell = CellView(cellHeight, cellWidth, Vector(i, j), color, controller, board[i, j])
+                    val cell = CellView(cellHeight, cellWidth, Vector(i, j), color, board[i, j], onCellClick)
                     cells[i][j] = cell
                     add(cell)
                 }
             }
         }
+    }
+
+    operator fun get(x: Int, y: Int) = cells[x][y]
+
+    operator fun set(x: Int, y: Int, piece: PieceView?) {
+        cells[x][y]!!.piece = piece
     }
 }
