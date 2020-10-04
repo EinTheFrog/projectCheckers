@@ -1,6 +1,6 @@
 package model
 
-class Cell (piece: Piece?, val pos: Vector) {
+class Cell (piece: Piece?, val pos: Vector): Cloneable {
     var piece: Piece? = null
     set(value) {
         field = value
@@ -8,6 +8,10 @@ class Cell (piece: Piece?, val pos: Vector) {
     }
     init {
         this.piece = piece
+    }
+
+    public override fun clone(): Cell {
+        return Cell(piece?.clone(), pos.clone())
     }
 }
 

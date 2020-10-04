@@ -1,6 +1,6 @@
 package model
 
-class Vector(val x: Int, val y: Int) {
+class Vector(val x: Int, val y: Int): Cloneable {
     operator fun plus(another: Vector): Vector = Vector( x + another.x,  y + another.y)
     operator fun minus(another: Vector): Vector = Vector(x - another.x, y - another.y)
     operator fun times(factor: Int) = Vector(x * factor, y * factor)
@@ -13,5 +13,9 @@ class Vector(val x: Int, val y: Int) {
 
     override fun hashCode(): Int {
         return x + 31 * y
+    }
+
+    public override fun clone(): Vector {
+        return Vector(x, y)
     }
 }

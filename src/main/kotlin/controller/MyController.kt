@@ -8,14 +8,16 @@ import view.PieceView
 
 class MyController: Controller() {
     private var board: Board? = null
+
     var boardView: BoardView? = null
     set(value) {
         field = value
         board = boardView?.board
     }
+
     var chosenPiece: PieceView? = null
     var isPlayerTurn = true
-    private val moves = mutableListOf<Move>()
+    private val ai = AI()
 
     fun clickOnCell(cell: CellView) {
         if (boardView == null) {
@@ -24,16 +26,16 @@ class MyController: Controller() {
 
         if (!isPlayerTurn) return
         val piece = cell.piece
-        if (piece != null) {
+        if (piece != null && piece.piece.color == 0) {
             choosePiece(piece)
         } else if (chosenPiece != null) {
             val move = defineCorrectMove(chosenPiece!!.piece.pos, cell.coords)
             if (move != null && board?.canPieceMakeThisMove(chosenPiece!!.piece, move) == true) {
-                moves.add(move)
                 if (move.isAttack) {
                     attackWithPiece(cell)
                 } else {
-                    makeTurn(cell)
+                    movePiece(cell)
+                    endTurn()
                 }
             }
         }
@@ -44,16 +46,12 @@ class MyController: Controller() {
         chosenPiece?.glow(true)
     }
 
-    private fun makeTurn(newCell: CellView) {
+    private fun endTurn() {
         if (board == null) {
             throw IllegalStateException("Board hasn't been set")
         }
         board!!.turnsMade++
         chosenPiece?.glow(false)
-        if (!moves.first().isAttack) {
-            movePiece(newCell)
-        }
-        moves.clear()
         chosenPiece = null
         isPlayerTurn = false
     }
@@ -75,8 +73,8 @@ class MyController: Controller() {
         attackedCell!!.piece = null
         boardView!![oldCoords.x, oldCoords.y] = null
         newCell.piece = chosenPiece
-        if (!board!!.getAvailableMovesForPiece(chosenPiece!!.piece).any{it.isAttack}) {
-            makeTurn(newCell)
+        if (!board!!.getAvailableMovesForPiece(chosenPiece!!.piece).any{it.first().isAttack}) {
+            endTurn()
         }
     }
 
@@ -92,5 +90,13 @@ class MyController: Controller() {
             Vector(-2, -2) -> Move.ATTACK_UP_LEFT
             else -> null
         }
+    }
+
+    fun playAITurn() {
+        if (board == null) {
+            throw IllegalStateException("Board hasn't been set")
+        }
+        val aiTurn = ai.makeTurn(board!!, 1)
+        isPlayerTurn = true
     }
 }

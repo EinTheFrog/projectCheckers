@@ -20,7 +20,7 @@ class MyView: View() {
         setOnKeyPressed {
             when(it.code) {
                 KeyCode.ESCAPE -> controller.choosePiece(null)
-                KeyCode.ENTER -> controller.isPlayerTurn = true
+                KeyCode.ENTER -> controller.playAITurn()
             }
 
         }

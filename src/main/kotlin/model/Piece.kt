@@ -5,4 +5,8 @@ data class Piece (
     var pos: Vector,
     val color: Int,
     val direction: Direction
-)
+): Cloneable {
+    public override fun clone(): Piece {
+        return Piece(type, pos.clone(), color, direction)
+    }
+}
