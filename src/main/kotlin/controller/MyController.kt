@@ -97,6 +97,17 @@ class MyController: Controller() {
             throw IllegalStateException("Board hasn't been set")
         }
         val aiTurn = ai.makeTurn(board!!, 1)
+        chosenPiece = boardView!![aiTurn.piece.pos.x, aiTurn.piece.pos.y]!!.piece
+        for (move in aiTurn.moves) {
+            val newCell = boardView!![aiTurn.piece.pos.x + move.vector.x, aiTurn.piece.pos.y + move.vector.y]!!
+            if (move.isAttack) {
+                attackWithPiece(newCell)
+            }
+            else {
+                movePiece(newCell)
+                endTurn()
+            }
+        }
         isPlayerTurn = true
     }
 }

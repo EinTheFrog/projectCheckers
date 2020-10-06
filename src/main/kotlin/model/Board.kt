@@ -126,20 +126,13 @@ class Board(
     }
 
     fun makeTurn(turn: Turn) {
-        if (turn.moves.size > 1) {
-            val a =0
-        }
         for (move in turn.moves) {
             if (move.isAttack) {
                 attack(turn.piece, move)
             } else {
-                if (!canPieceMove(turn.piece, move)) {
-                    val a =0
-                }
                 move(turn.piece, move)
             }
         }
-
         turnsMade++
     }
 
@@ -172,6 +165,7 @@ class Board(
         piece.pos = newPos
     }
 
+    fun getPiece(pos: Vector) = boardArray[pos.x][pos.y].piece
 
     operator fun get(x: Int, y: Int) = boardArray[x][y]
 

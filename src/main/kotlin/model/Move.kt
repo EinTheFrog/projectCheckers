@@ -41,6 +41,7 @@ enum class Move {
         override val isAttack = true
         override val direction = Direction.DOWN
     };
+
     public abstract val direction: Direction
     public abstract val vector: Vector
     public abstract val isAttack: Boolean

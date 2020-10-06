@@ -1,18 +1,21 @@
 package model
 
+import java.lang.Exception
+
 class AI {
     private val depth = 5
     fun makeTurn(board: Board, maximizingColor: Int): Turn {
         val availableTurns = board.getAvailableTurns()
-        val viewedTurns = mutableMapOf<Int, Turn>()
-        for (piece in availableTurns.keys) {
-            for (moves in availableTurns[piece]!!) {
+        val viewedTurns = mutableMapOf<Turn, Int>()
+        for (pieceKey in availableTurns.keys) {
+            for (moves in availableTurns[pieceKey]!!) {
                 val newBoard = board.clone()
+                val piece = newBoard.getPiece(pieceKey.pos)!!
                 newBoard.makeTurn(Turn(piece, moves))
-                viewedTurns[minimax(newBoard, maximizingColor, depth - 1)] = Turn(piece, moves)
+                viewedTurns[Turn(pieceKey, moves)] = minimax(newBoard, maximizingColor, depth - 1)
             }
         }
-        return viewedTurns[viewedTurns.keys.maxOf { it }]!!
+        return viewedTurns.maxByOrNull { it.value }?.key ?: throw Exception("No turns left")
     }
 
     private fun minimax(board: Board, maximizingColor: Int, depth: Int): Int {
@@ -23,9 +26,10 @@ class AI {
         val availableTurns = board.getAvailableTurns()
         val color = board.turnsMade % 2
         val viewedTurns = mutableListOf<Int>()
-        for (piece in availableTurns.keys) {
-            for (moves in availableTurns[piece]!!) {
+        for (pieceKey in availableTurns.keys) {
+            for (moves in availableTurns[pieceKey]!!) {
                 val newBoard = board.clone()
+                val piece = newBoard.getPiece(pieceKey.pos)!!
                 newBoard.makeTurn(Turn(piece, moves))
                 viewedTurns.add(minimax(newBoard, maximizingColor, depth - 1))
             }
