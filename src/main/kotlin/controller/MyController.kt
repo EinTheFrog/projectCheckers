@@ -1,5 +1,8 @@
 package controller
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import model.*
 import tornadofx.Controller
 import view.BoardView
@@ -33,9 +36,12 @@ class MyController: Controller() {
             if (move != null && board?.canPieceMakeThisMove(chosenPiece!!.piece, move) == true) {
                 if (move.isAttack) {
                     attackWithPiece(cell)
-                } else {
+                } else if (!board!!.getAvailableTurns().values.any{it.any{it.any{it.isAttack}}}){
                     movePiece(cell)
                     endTurn()
+                } else {
+                    chosenPiece?.glow(false)
+                    chosenPiece = null
                 }
             }
         }
@@ -107,6 +113,7 @@ class MyController: Controller() {
                 movePiece(newCell)
                 endTurn()
             }
+            runBlocking { launch { suspend { 100 } } }
         }
         isPlayerTurn = true
     }

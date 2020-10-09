@@ -1,14 +1,6 @@
 package view
 
-import javafx.scene.Parent
-import javafx.scene.image.ImageView
-import javafx.scene.layout.GridPane
-import javafx.scene.paint.Color
-import javafx.scene.shape.Ellipse
-import javafx.scene.shape.Rectangle
-import model.Board
 import model.Cell
-import tornadofx.*
 import java.awt.image.BufferedImage
 
 class Renderer {
