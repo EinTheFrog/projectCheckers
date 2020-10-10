@@ -1,21 +1,18 @@
 package view
 
-import controller.MyController
-import javafx.beans.binding.DoubleBinding
 import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.geometry.Pos
-import javafx.scene.layout.GridPane
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import model.Board
-import model.Piece
-import model.PieceType
 import model.Vector
-import tornadofx.Controller
 import tornadofx.add
 import tornadofx.gridpane
 import tornadofx.rectangle
 
+/**
+ * Хранит графическое представление клеток поля и логическое представление доски
+ */
 class BoardView(
         heightProperty: ReadOnlyDoubleProperty,
         widthProperty: ReadOnlyDoubleProperty,
@@ -24,6 +21,7 @@ class BoardView(
 ): StackPane() {
     private val cells = Array(8) {Array<CellView?>(8) {null} }
     init {
+        //запрещаем фокусироваться на доску
         isFocusTraversable = true
         //создаем границы доски
         rectangle {
@@ -50,6 +48,7 @@ class BoardView(
         }
     }
 
+    //функции для удобства взаимодействия с клетками поля
     operator fun get(x: Int, y: Int) = cells[x][y]
 
     operator fun set(x: Int, y: Int, piece: PieceView?) {

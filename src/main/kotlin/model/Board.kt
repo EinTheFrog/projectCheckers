@@ -22,6 +22,7 @@ class Board(
         val result = HashMap<Piece, List<List<Move>>>()
         for (i in boardArray.indices) {
             for (j in boardArray[i].indices) {
+                //просматриваем все фигуры цвета ходящего
                 if (boardArray[i][j].piece == null || boardArray[i][j].piece!!.color != turnsMade % 2) continue
                 val piece = boardArray[i][j].piece ?: continue
                 val availableTurns = getAvailableMovesForPiece(piece)
@@ -48,6 +49,7 @@ class Board(
         //то она обязана атаковать (а значит мы не можем просто переместить ее)
         for (move in Move.values().filter { it.isAttack }) {
             if (canPieceAttack(piece, move)) {
+                //смотрим, можем ли продолжать атаковать
                 val attackCombos = getAdditionalAttacks(piece, piece.pos + move.vector)
                 if (attackCombos.isNotEmpty()) {
                     for (attackCombo in attackCombos) {
@@ -126,6 +128,7 @@ class Board(
     }
 
     fun makeTurn(turn: Turn) {
+        //изменям расположение фигур на доске и кол-во совершенных ходов
         for (move in turn.moves) {
             if (move.isAttack) {
                 attack(turn.piece, move)
@@ -165,6 +168,7 @@ class Board(
         piece.pos = newPos
     }
 
+    //функции, упрощающие обращение к фигурам и клеткам
     fun getPiece(pos: Vector) = boardArray[pos.x][pos.y].piece
 
     operator fun get(x: Int, y: Int) = boardArray[x][y]

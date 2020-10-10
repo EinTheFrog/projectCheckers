@@ -1,11 +1,6 @@
 package model
 
-enum class PieceType {
-    CHECKER {
-        override val cost = 10
-    },
-    KING {
-        override val cost = 12
-    };
-    public abstract val cost: Int
+enum class PieceType(val cost: Int) {
+    CHECKER (10),
+    KING (12)
 }

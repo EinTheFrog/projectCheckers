@@ -3,6 +3,9 @@ package view
 import model.Cell
 import java.awt.image.BufferedImage
 
+/**
+ * Класс для упрощения процесса поиска багов
+ */
 class Renderer {
     fun render(boardArray: Array<Array<Cell>>): BufferedImage {
         val img = BufferedImage(8, 8, BufferedImage.TYPE_INT_RGB)

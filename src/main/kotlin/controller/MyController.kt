@@ -1,6 +1,5 @@
 package controller
 
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import model.*
@@ -22,16 +21,22 @@ class MyController: Controller() {
     var isPlayerTurn = true
     private val ai = AI()
 
+    //функция для обработки нажатия на клетку
     fun clickOnCell(cell: CellView) {
+        //мы должны знать доску, на которой находится клетка
         if (boardView == null) {
             throw IllegalStateException("Board hasn't been set")
         }
 
+        //если сейчас ход ИИ, то игрок не может двигать фигуры
         if (!isPlayerTurn) return
+
         val piece = cell.piece
         if (piece != null && piece.piece.color == 0) {
+            //если клетка не пустая и фигура черная (пока игрок может играть только за черных), то выбираем фигуру
             choosePiece(piece)
-        } else if (chosenPiece != null) {
+        } else if (chosenPiece != null) {//если игрок уже выбрал фигуру, то ходим ей
+            //определяем какой ход хочет сделать игрок по взаимному расположению выбранной фигуры и нажатой клетки
             val move = defineCorrectMove(chosenPiece!!.piece.pos, cell.coords)
             if (move != null && board?.canPieceMakeThisMove(chosenPiece!!.piece, move) == true) {
                 if (move.isAttack) {
@@ -56,16 +61,18 @@ class MyController: Controller() {
         if (board == null) {
             throw IllegalStateException("Board hasn't been set")
         }
+        //увеличиваем кол-во ходов, обнуляем выбранную фигуру
         board!!.turnsMade++
         chosenPiece?.glow(false)
         chosenPiece = null
-        isPlayerTurn = false
+        isPlayerTurn = board!!.turnsMade % 2 == 0
     }
 
     private fun movePiece(newCell: CellView) {
         if (chosenPiece == null) {
             throw IllegalStateException("Piece hasn't been set")
         }
+        //убираем фигуру со старой клетки и ставим на новую
         boardView!![chosenPiece!!.piece.pos.x, chosenPiece!!.piece.pos.y] = null
         newCell.piece = chosenPiece
     }
@@ -76,7 +83,9 @@ class MyController: Controller() {
         }
         val oldCoords = boardView!![chosenPiece!!.piece.pos.x, chosenPiece!!.piece.pos.y]!!.coords
         val attackedCell = boardView!![(oldCoords.x + newCell.coords.x) / 2, (oldCoords.y + newCell.coords.y) / 2]
+        //убираем с клетки атакованную фигуру
         attackedCell!!.piece = null
+        //убираем фигуру со старой клетки и ставим на новую
         boardView!![oldCoords.x, oldCoords.y] = null
         newCell.piece = chosenPiece
         if (!board!!.getAvailableMovesForPiece(chosenPiece!!.piece).any{it.first().isAttack}) {
@@ -84,26 +93,17 @@ class MyController: Controller() {
         }
     }
 
-    private fun defineCorrectMove(curPos: Vector, newPos: Vector): Move? {
-        return when(newPos - curPos) {
-            Vector(1, 1) -> Move.GO_DOWN_RIGHT
-            Vector(-1, 1) -> Move.GO_DOWN_LEFT
-            Vector(1, -1) -> Move.GO_UP_RIGHT
-            Vector(-1, -1) -> Move.GO_UP_LEFT
-            Vector(2, 2) -> Move.ATTACK_DOWN_RIGHT
-            Vector(-2, 2) -> Move.ATTACK_DOWN_LEFT
-            Vector(2, -2) -> Move.ATTACK_UP_RIGHT
-            Vector(-2, -2) -> Move.ATTACK_UP_LEFT
-            else -> null
-        }
-    }
+    private fun defineCorrectMove(curPos: Vector, newPos: Vector): Move? = Move.values().find { it.vector ==  newPos - curPos}
 
     fun playAITurn() {
         if (board == null) {
             throw IllegalStateException("Board hasn't been set")
         }
+        //определяем ход ИИ
         val aiTurn = ai.makeTurn(board!!, 1)
+        //выбираем фигуру по ходу ИИ
         chosenPiece = boardView!![aiTurn.piece.pos.x, aiTurn.piece.pos.y]!!.piece
+        //последовательно совершаем все ходы ИИ
         for (move in aiTurn.moves) {
             val newCell = boardView!![aiTurn.piece.pos.x + move.vector.x, aiTurn.piece.pos.y + move.vector.y]!!
             if (move.isAttack) {
@@ -115,6 +115,5 @@ class MyController: Controller() {
             }
             runBlocking { launch { suspend { 100 } } }
         }
-        isPlayerTurn = true
     }
 }

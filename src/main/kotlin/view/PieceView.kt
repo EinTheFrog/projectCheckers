@@ -7,6 +7,9 @@ import javafx.scene.shape.Ellipse
 import model.Piece
 import tornadofx.*
 
+/**
+ * Хранит логическое предстваление фигуры
+ */
 class PieceView(
         cellHeight: ReadOnlyDoubleProperty,
         cellWidth: ReadOnlyDoubleProperty,
