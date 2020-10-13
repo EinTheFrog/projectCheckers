@@ -47,21 +47,7 @@ class Board(
         val result = mutableListOf<List<Move>>()
         //если фигура может атаковать,
         //то она обязана атаковать (а значит мы не можем просто переместить ее)
-        for (move in Move.values().filter { it.isAttack }) {
-            if (canPieceAttack(piece, move)) {
-                //смотрим, можем ли продолжать атаковать
-                val attackCombos = getAdditionalAttacks(piece, piece.pos + move.vector)
-                if (attackCombos.isNotEmpty()) {
-                    for (attackCombo in attackCombos) {
-                        val attacks = mutableListOf(move)
-                        attacks.addAll(attackCombo)
-                        result.add(attacks)
-                    }
-                } else {
-                    result.add(listOf(move))
-                }
-            }
-        }
+        result.addAttacks(piece)
         if (result.isNotEmpty()) return result
 
         for (move in Move.values().filter { !it.isAttack }) {
@@ -75,21 +61,25 @@ class Board(
     fun getAdditionalAttacks(piece: Piece, newPos: Vector): List<List<Move>> {
         val result = mutableListOf<List<Move>>()
         val phantomPiece = Piece(piece.type, newPos, piece.color, piece.direction)
+        result.addAttacks(phantomPiece)
+        return result
+    }
+
+    private fun MutableList<List<Move>>.addAttacks(piece: Piece) {
         for (move in Move.values().filter { it.isAttack }) {
-            if (canPieceAttack(phantomPiece, move)) {
-                val attackCombos = getAdditionalAttacks(phantomPiece, phantomPiece.pos + move.vector)
+            if (canPieceAttack(piece, move)) {
+                val attackCombos = getAdditionalAttacks(piece, piece.pos + move.vector)
                 if (attackCombos.isNotEmpty()) {
                     for (attackCombo in attackCombos) {
                         val attacks = mutableListOf(move)
                         attacks.addAll(attackCombo)
-                        result.add(attacks)
+                        this.add(attacks)
                     }
                 } else {
-                    result.add(listOf(move))
+                    this.add(listOf(move))
                 }
             }
         }
-        return result
     }
 
     fun canPieceMakeThisMove(piece: Piece, move: Move): Boolean {

@@ -1,11 +1,13 @@
 package controller
 
+import javafx.stage.Modality
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import model.*
 import tornadofx.Controller
 import view.BoardView
 import view.CellView
+import view.GameMenu
 import view.PieceView
 
 class MyController: Controller() {
@@ -49,6 +51,14 @@ class MyController: Controller() {
                     chosenPiece = null
                 }
             }
+        }
+    }
+
+    fun onEsc() {
+        if (chosenPiece != null) {
+            choosePiece(null)
+        } else {
+            find<GameMenu>().openWindow()
         }
     }
     fun choosePiece(piece: PieceView?) {

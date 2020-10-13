@@ -8,13 +8,13 @@ class AI {
         val availableTurns = board.getAvailableTurns()
         //храним ходы и определенную минимаксом конечную ценность доски, к которой они приведут
         val viewedTurns = mutableMapOf<Turn, Int>()
-        for (pieceKey in availableTurns.keys) {
-            for (moves in availableTurns[pieceKey]!!) {
+        for((key, value) in availableTurns) {
+            for (moves in value) {
                 //для симуляции хода копируем доску
                 val newBoard = board.clone()
-                val piece = newBoard.getPiece(pieceKey.pos)!!
+                val piece = newBoard.getPiece(key.pos)!!
                 newBoard.makeTurn(Turn(piece, moves))
-                viewedTurns[Turn(pieceKey, moves)] = minimax(newBoard, maximizingColor, DEPTH - 1)
+                viewedTurns[Turn(key, moves)] = minimax(newBoard, maximizingColor, DEPTH - 1)
             }
         }
         //возвращаем самый оптимальный ход
@@ -29,11 +29,11 @@ class AI {
 
         val availableTurns = board.getAvailableTurns()
         val viewedTurns = mutableListOf<Int>()
-        for (pieceKey in availableTurns.keys) {
-            for (moves in availableTurns[pieceKey]!!) {
+        for ((key, value) in availableTurns) {
+            for (moves in value) {
                 //для симуляции хода копируем доску
                 val newBoard = board.clone()
-                val piece = newBoard.getPiece(pieceKey.pos)!!
+                val piece = newBoard.getPiece(key.pos)!!
                 newBoard.makeTurn(Turn(piece, moves))
                 //спускаемся ниже по рекурсии
                 viewedTurns.add(minimax(newBoard, maximizingColor, depth - 1))

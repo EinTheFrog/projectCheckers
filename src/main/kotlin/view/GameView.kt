@@ -2,6 +2,8 @@ package view
 
 import controller.MyController
 import javafx.scene.input.KeyCode
+import javafx.stage.Screen
+import javafx.stage.StageStyle
 import model.Board
 import tornadofx.View
 import tornadofx.pane
@@ -27,7 +29,7 @@ class GameView: View() {
         //добавляем обработку нажатия клавиш
         setOnKeyPressed {
             when (it.code) {
-                KeyCode.ESCAPE -> controller.choosePiece(null) //для отмены выбора фигуры
+                KeyCode.ESCAPE -> controller.onEsc()
                 KeyCode.ENTER -> controller.playAITurn() // для передачи хода ИИ
             }
         }
