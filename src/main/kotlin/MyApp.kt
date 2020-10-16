@@ -1,4 +1,4 @@
 import tornadofx.*
-import view.MyView
+import view.MainMenu
 
-class MyApp: App(MyView::class)
+class MyApp: App(MainMenu::class)

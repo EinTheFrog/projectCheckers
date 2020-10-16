@@ -5,10 +5,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import model.*
 import tornadofx.Controller
-import view.BoardView
-import view.CellView
-import view.GameMenu
-import view.PieceView
+import tornadofx.add
+import tornadofx.removeFromParent
+import view.*
 
 class MyController: Controller() {
     private var board: Board? = null
@@ -22,9 +21,15 @@ class MyController: Controller() {
     var chosenPiece: PieceView? = null
     var isPlayerTurn = true
     private val ai = AI()
+    var gameMode = GameMode.GAME
+
+    enum class GameMode {
+        GAME, MENU
+    }
 
     //функция для обработки нажатия на клетку
     fun clickOnCell(cell: CellView) {
+        if (gameMode != GameMode.GAME) return
         //мы должны знать доску, на которой находится клетка
         if (boardView == null) {
             throw IllegalStateException("Board hasn't been set")
@@ -55,12 +60,23 @@ class MyController: Controller() {
     }
 
     fun onEsc() {
-        if (chosenPiece != null) {
-            choosePiece(null)
-        } else {
-            find<GameMenu>().openWindow()
+        when {
+            chosenPiece != null -> choosePiece(null)
+            gameMode == GameMode.GAME -> openMenu()
+            else -> closeMenu()
         }
     }
+
+    private fun openMenu() {
+        find<GameView>().add(find<GameMenu>().root)
+        gameMode = GameMode.MENU
+    }
+
+    private fun closeMenu() {
+        find<GameMenu>().removeFromParent()
+        gameMode = GameMode.GAME
+    }
+
     fun choosePiece(piece: PieceView?) {
         chosenPiece?.glow(false)
         chosenPiece = piece
@@ -106,6 +122,7 @@ class MyController: Controller() {
     private fun defineCorrectMove(curPos: Vector, newPos: Vector): Move? = Move.values().find { it.vector ==  newPos - curPos}
 
     fun playAITurn() {
+        if (gameMode != GameMode.GAME) return
         if (board == null) {
             throw IllegalStateException("Board hasn't been set")
         }

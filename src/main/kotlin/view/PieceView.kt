@@ -17,6 +17,7 @@ class PieceView(
         val piece: Piece
 ): Pane() {
     private var ellipse = Ellipse()
+    private var myColor = Color.BLACK
     init {
         isFocusTraversable = true
         ellipse = ellipse {
@@ -24,6 +25,7 @@ class PieceView(
             radiusXProperty().bind(cellWidth / 3)
             centerYProperty().bind(cellHeight / 2)
             centerXProperty().bind(cellWidth / 2)
+            myColor = color
             fill = color
         }
         this += ellipse
@@ -33,6 +35,16 @@ class PieceView(
         val color = if (bool) Color.YELLOW else Color.BLACK
         ellipse.style {
             stroke = color
+        }
+    }
+
+    fun becomeKing() {
+        this += rectangle {
+            heightProperty().bind(ellipse.radiusYProperty() / 2)
+            widthProperty().bind(ellipse.radiusXProperty() / 2)
+            yProperty().bind(ellipse.centerYProperty())
+            xProperty().bind(ellipse.centerXProperty())
+            fill = myColor.invert()
         }
     }
 }

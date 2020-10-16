@@ -9,7 +9,13 @@ class MainMenu: View() {
     override val root = vbox {
         button {
             text = "Play"
-            setOnAction { MyView().startGame() }
+            setOnAction { startGame() }
         }
+    }
+
+    private fun startGame() {
+        replaceWith(find<GameView>(), sizeToScene = true, centerOnScreen = true)
+        find<GameView>().startNewGame()
+        currentWindow?.sizeToScene()
     }
 }
