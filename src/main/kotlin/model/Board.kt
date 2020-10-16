@@ -4,15 +4,12 @@ import java.lang.IllegalArgumentException
 import kotlin.collections.HashMap
 
 class Board(
-        var turns: MutableList<Turn>,
-        private val boardsInTime: MutableMap<Int, Array<Array<Cell>>> =
-                mutableMapOf(0 to Array(8) {i -> Array(8) {j -> Cell(null, Vector(i, j)) } })
-) {
+        var turnsMade: Int,
+        private val boardArray: Array<Array<Cell>> = Array(8) {i -> Array(8) {j -> Cell(null, Vector(i, j)) } }
+): Cloneable {
     val cost: Int
         get() {
             var result = 0
-            val boardArray =
-                    boardsInTime[turns.size] ?: throw IllegalArgumentException("Hasn't made such many turns")
             for (i in boardArray.indices) {
                 for (j in boardArray[i].indices) {
                     result += boardArray[i][j].piece?.type?.cost ?: 0
@@ -23,12 +20,10 @@ class Board(
 
     fun getAvailableTurns(): Map<Piece, List<List<Move>>> {
         val result = HashMap<Piece, List<List<Move>>>()
-        val boardArray =
-                boardsInTime[turns.size] ?: throw IllegalArgumentException("Hasn't made such many turns")
         for (i in boardArray.indices) {
             for (j in boardArray[i].indices) {
                 //просматриваем все фигуры цвета ходящего
-                if (boardArray[i][j].piece == null || boardArray[i][j].piece!!.color != turns.size % 2) continue
+                if (boardArray[i][j].piece == null || boardArray[i][j].piece!!.color != turnsMade % 2) continue
                 val piece = boardArray[i][j].piece ?: continue
                 val availableTurns = getAvailableMovesForPiece(piece)
                 if (availableTurns.isEmpty()) continue
@@ -63,23 +58,17 @@ class Board(
         return result
     }
 
-/*    private fun getAdditionalAttacks(piece: Piece): List<List<Move>> {
+    fun getAdditionalAttacks(piece: Piece, newPos: Vector): List<List<Move>> {
         val result = mutableListOf<List<Move>>()
-        //val phantomPiece = Piece(piece.type, newPos, piece.color, piece.direction)
+        val phantomPiece = Piece(piece.type, newPos, piece.color, piece.direction)
         result.addAttacks(phantomPiece)
         return result
-    }*/
+    }
 
-    private fun MutableList<List<Move>>.addAttacks(piece: Piece): List<List<Move>>  {
-        val newBoard =
-                boardsInTime[turns.size]?.clone() ?: throw IllegalArgumentException("Hasn't made such many turns")
-        //мы еще не знаем сколько атак будет в ходе, поэтому мы не добавляем ход в turns,
-        //однако нам нужно двигать фигуры (для определения кол-ва возможных атак), не портя нынешнюю доску
-        boardsInTime[turns.size + 1] = newBoard
+    private fun MutableList<List<Move>>.addAttacks(piece: Piece) {
         for (move in Move.values().filter { it.isAttack }) {
             if (canPieceAttack(piece, move)) {
-                attack(piece, move)
-                val attackCombos =  mutableListOf<List<Move>>().addAttacks(piece)
+                val attackCombos = getAdditionalAttacks(piece, piece.pos + move.vector)
                 if (attackCombos.isNotEmpty()) {
                     for (attackCombo in attackCombos) {
                         val attacks = mutableListOf(move)
@@ -91,9 +80,6 @@ class Board(
                 }
             }
         }
-        //удаляем виртуальную доску
-        boardsInTime.remove(turns.size + 1)
-        return this
     }
 
     fun canPieceMakeThisMove(piece: Piece, move: Move): Boolean {
@@ -106,28 +92,22 @@ class Board(
 
         val enemyPos = piece.pos + move.vector / 2
         val newPos = piece.pos + move.vector
-        val boardArray =
-                boardsInTime[turns.size] ?: throw IllegalArgumentException("Hasn't made such many turns")
-        val result =  (
-                (piece.direction == move.direction || piece.type === PieceType.KING) &&
+
+        return (
+                (piece.direction == move.direction ||
+                piece.type === PieceType.KING) &&
                 newPos.x in boardArray.indices &&
                 newPos.y in boardArray[0].indices &&
                 boardArray[enemyPos.x][enemyPos.y].piece != null &&
                 boardArray[enemyPos.x][enemyPos.y].piece!!.color != piece.color &&
                 boardArray[newPos.x][newPos.y].piece == null
                 )
-        if (piece.type == PieceType.KING && result) {
-            val a = 0
-        }
-        return result
     }
 
    private fun canPieceMove(piece: Piece, move: Move): Boolean {
        if (move.isAttack) throw IllegalArgumentException("Can't move with attack move")
 
         val newPos = piece.pos + move.vector
-       val boardArray =
-               boardsInTime[turns.size] ?: throw IllegalArgumentException("Hasn't made such many turns")
         return (
                 (piece.direction == move.direction ||
                 piece.type === PieceType.KING) &&
@@ -137,12 +117,7 @@ class Board(
                 )
     }
 
-    fun makeTurn(turn: Turn, turnNumber: Int = turns.size + 1) {
-        turns = turns.subList(0, turnNumber - 1)
-        turns.add(turn)
-        val newBoard =
-                boardsInTime[turns.size]?.clone() ?: throw IllegalArgumentException("Hasn't made such many turns")
-        boardsInTime[turns.size] = newBoard
+    fun makeTurn(turn: Turn) {
         //изменям расположение фигур на доске и кол-во совершенных ходов
         for (move in turn.moves) {
             if (move.isAttack) {
@@ -151,6 +126,7 @@ class Board(
                 move(turn.piece, move)
             }
         }
+        turnsMade++
     }
 
     private fun move(piece: Piece, move: Move) {
@@ -171,47 +147,33 @@ class Board(
         val newPos = piece.pos + move.vector
 
         changePiecePosition(piece, newPos)
-        val boardArray =
-                boardsInTime[turns.size] ?: throw IllegalArgumentException("Hasn't made such many turns")
         boardArray[enemyPos.x][enemyPos.y].piece = null
     }
 
     private fun changePiecePosition(piece: Piece, newPos: Vector) {
         val oldPos = piece.pos
 
-        val boardArray =
-                boardsInTime[turns.size] ?: throw IllegalArgumentException("Hasn't made such many turns")
         boardArray[oldPos.x][oldPos.y].piece = null
         boardArray[newPos.x][newPos.y].piece = piece
         piece.pos = newPos
     }
 
     //функции, упрощающие обращение к фигурам и клеткам
-    fun getPiece(pos: Vector): Piece? {
-        val boardArray =
-                boardsInTime[turns.size] ?: throw IllegalArgumentException("Hasn't made such many turns")
-        return boardArray[pos.x][pos.y].piece
-    }
+    fun getPiece(pos: Vector) = boardArray[pos.x][pos.y].piece
 
-    operator fun get(x: Int, y: Int): Cell {
-        val boardArray =
-                boardsInTime[turns.size] ?: throw IllegalArgumentException("Hasn't made such many turns")
-        return boardArray[x][y]
-    }
+    operator fun get(x: Int, y: Int) = boardArray[x][y]
 
     operator fun set(x: Int, y: Int, piece: Piece) {
-        val boardArray =
-                boardsInTime[turns.size] ?: throw IllegalArgumentException("Hasn't made such many turns")
         boardArray[x][y].piece = piece
     }
 
-    fun Array<Array<Cell>>.clone(): Array<Array<Cell>> {
+    public override fun clone(): Board {
         val boardArrayClone: Array<Array<Cell>> = Array(8) {i -> Array(8) {j -> Cell(null, Vector(i, j)) }}
-        for (i in this.indices) {
-            for (j in this[0].indices) {
-                boardArrayClone[i][j] = this[i][j].clone()
+        for (i in boardArray.indices) {
+            for (j in boardArray[0].indices) {
+                boardArrayClone[i][j] = boardArray[i][j].clone()
             }
         }
-        return boardArrayClone
+        return Board(turnsMade, boardArrayClone)
     }
 }

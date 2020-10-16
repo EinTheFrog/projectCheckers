@@ -1,5 +1,6 @@
 package controller
 
+import javafx.stage.Modality
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import model.*
@@ -18,7 +19,6 @@ class MyController: Controller() {
     }
 
     var chosenPiece: PieceView? = null
-    val pieceMoves = mutableListOf<Move>()
     var isPlayerTurn = true
     private val ai = AI()
     var gameMode = GameMode.GAME
@@ -46,7 +46,6 @@ class MyController: Controller() {
             //определяем какой ход хочет сделать игрок по взаимному расположению выбранной фигуры и нажатой клетки
             val move = defineCorrectMove(chosenPiece!!.piece.pos, cell.coords)
             if (move != null && board?.canPieceMakeThisMove(chosenPiece!!.piece, move) == true) {
-                pieceMoves.add(move)
                 if (move.isAttack) {
                     attackWithPiece(cell)
                 } else if (!board!!.getAvailableTurns().values.any{it.any{it.any{it.isAttack}}}){
@@ -58,10 +57,6 @@ class MyController: Controller() {
                 }
             }
         }
-    }
-
-    fun createKing() {
-        chosenPiece?.becomeKing()
     }
 
     fun onEsc() {
@@ -93,11 +88,10 @@ class MyController: Controller() {
             throw IllegalStateException("Board hasn't been set")
         }
         //увеличиваем кол-во ходов, обнуляем выбранную фигуру
-        board!!.makeTurn(Turn(chosenPiece!!.piece, pieceMoves))
+        board!!.turnsMade++
         chosenPiece?.glow(false)
         chosenPiece = null
-        pieceMoves.clear()
-        isPlayerTurn = board!!.turns.size % 2 == 0
+        isPlayerTurn = board!!.turnsMade % 2 == 0
     }
 
     private fun movePiece(newCell: CellView) {

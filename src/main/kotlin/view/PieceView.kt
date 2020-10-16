@@ -5,7 +5,6 @@ import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import javafx.scene.shape.Ellipse
 import model.Piece
-import model.PieceType
 import tornadofx.*
 
 /**
@@ -47,6 +46,5 @@ class PieceView(
             xProperty().bind(ellipse.centerXProperty())
             fill = myColor.invert()
         }
-        piece.type = PieceType.KING
     }
 }

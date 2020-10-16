@@ -14,10 +14,10 @@ import tornadofx.stackpane
 class GameView: View() {
     //создаем контроллер и доску
     private val controller = find<MyController>()
-    private var board = Board(mutableListOf())
+    private var board = Board(0)
 
     fun startNewGame() {
-        board = Board(mutableListOf())
+        board = Board(0)
         root.replaceWith(createTable())
     }
 
@@ -46,7 +46,6 @@ class GameView: View() {
             when (it.code) {
                 KeyCode.ESCAPE -> controller.onEsc()
                 KeyCode.ENTER -> controller.playAITurn() // для передачи хода ИИ
-                KeyCode.K -> controller.createKing()
             }
         }
         val gameWindowWidth = Screen.getPrimary().bounds.width / 2

@@ -1,7 +1,7 @@
 package model
 
 data class Piece (
-    var type: PieceType,
+    val type: PieceType,
     var pos: Vector,
     val color: Int,
     val direction: Direction
