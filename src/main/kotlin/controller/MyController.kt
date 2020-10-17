@@ -89,6 +89,10 @@ class MyController: Controller() {
         }
         //увеличиваем кол-во ходов, обнуляем выбранную фигуру
         board!!.turnsMade++
+        if (chosenPiece!!.piece.pos.y == 0 && chosenPiece!!.piece.direction == Direction.UP ||
+                chosenPiece!!.piece.pos.y == 7 && chosenPiece!!.piece.direction == Direction.DOWN) {
+            chosenPiece!!.becomeKing()
+        }
         chosenPiece?.glow(false)
         chosenPiece = null
         isPlayerTurn = board!!.turnsMade % 2 == 0
