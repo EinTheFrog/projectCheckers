@@ -1,6 +1,5 @@
 package view
 
-import controller.MyController
 import tornadofx.View
 import tornadofx.button
 import tornadofx.removeFromParent

@@ -3,7 +3,7 @@ package model
 import java.lang.Exception
 
 class AI {
-    fun makeTurn(board: Board, maximizingColor: Int): Turn {
+    fun makeTurn(board: Board, maximizingColor: Int): Turn? {
         //получаем все возможные ходы для данной ситуации на доске
         val availableTurns = board.getAvailableTurns()
         //храним ходы и определенную минимаксом конечную ценность доски, к которой они приведут
@@ -28,6 +28,9 @@ class AI {
         val color = board.turnsMade % 2
 
         val availableTurns = board.getAvailableTurns()
+        //если ходов больше нет, то проигрывает тот, у кого нет ходов
+        if (availableTurns.isEmpty()) return if (color == maximizingColor) Int.MIN_VALUE else Int.MAX_VALUE
+
         val viewedTurns = mutableListOf<Int>()
         for ((key, value) in availableTurns) {
             for (moves in value) {

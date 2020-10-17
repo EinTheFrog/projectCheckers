@@ -72,6 +72,11 @@ class MyController: Controller() {
         gameMode = GameMode.MENU
     }
 
+    private fun openLoseMenu() {
+        find<GameView>().add(find<LoseMenu>().root)
+        gameMode = GameMode.MENU
+    }
+
     private fun closeMenu() {
         find<GameMenu>().removeFromParent()
         gameMode = GameMode.GAME
@@ -132,6 +137,11 @@ class MyController: Controller() {
         }
         //определяем ход ИИ
         val aiTurn = ai.makeTurn(board!!, 1)
+
+        if (aiTurn == null) {
+            openLoseMenu()
+            return
+        }
         //выбираем фигуру по ходу ИИ
         chosenPiece = boardView!![aiTurn.piece.pos.x, aiTurn.piece.pos.y]!!.piece
         //последовательно совершаем все ходы ИИ
@@ -145,6 +155,11 @@ class MyController: Controller() {
                 endTurn()
             }
             runBlocking { launch { suspend { 100 } } }
+        }
+
+        if (board!!.getAvailableTurns().isEmpty()) {
+            openLoseMenu()
+            return
         }
     }
 }
