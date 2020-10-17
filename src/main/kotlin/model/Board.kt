@@ -47,7 +47,7 @@ class Board(
         val result = mutableListOf<List<Move>>()
         //если фигура может атаковать,
         //то она обязана атаковать (а значит мы не можем просто переместить ее)
-        result.addAttacks(piece)
+        result.addAttacks(piece, setOf())
         if (result.isNotEmpty()) return result
 
         for (move in Move.values().filter { !it.isAttack }) {
@@ -58,17 +58,24 @@ class Board(
         return result
     }
 
-    fun getAdditionalAttacks(piece: Piece, newPos: Vector): List<List<Move>> {
+    private fun getAdditionalAttacks(piece: Piece, newPos: Vector, removedPieces: Set<Piece>): List<List<Move>> {
         val result = mutableListOf<List<Move>>()
         val phantomPiece = Piece(piece.type, newPos, piece.color, piece.direction)
-        result.addAttacks(phantomPiece)
+        result.addAttacks(phantomPiece, removedPieces)
         return result
     }
 
-    private fun MutableList<List<Move>>.addAttacks(piece: Piece) {
+    private fun MutableList<List<Move>>.addAttacks(piece: Piece, removedPieces: Set<Piece>) {
         for (move in Move.values().filter { it.isAttack }) {
-            if (canPieceAttack(piece, move)) {
-                val attackCombos = getAdditionalAttacks(piece, piece.pos + move.vector)
+            //мы не можем менять доску при поиска возможных атак, поэтому вместо того, чтобы удалять фигуры при атаке
+            //мы заносим их в set удаленных и при проверке последующих атак в комбинации не атакуем эти фигуры
+            if (canPieceAttack(piece, move, removedPieces)) {
+                val enemyPos = piece.pos + move.vector / 2
+                val attackCombos = getAdditionalAttacks(
+                        piece,
+                        piece.pos + move.vector,
+                        removedPieces + boardArray[enemyPos.x][enemyPos.y].piece!!
+                )
                 if (attackCombos.isNotEmpty()) {
                     for (attackCombo in attackCombos) {
                         val attacks = mutableListOf(move)
@@ -87,20 +94,20 @@ class Board(
         else canPieceMove(piece, move)
     }
 
-    private fun canPieceAttack(piece: Piece, move: Move): Boolean {
+    private fun canPieceAttack(piece: Piece, move: Move, removedPieces: Set<Piece> = setOf()): Boolean {
         if (!move.isAttack) throw IllegalArgumentException("Can't attack with non attack move")
 
         val enemyPos = piece.pos + move.vector / 2
         val newPos = piece.pos + move.vector
 
         return (
-                (piece.direction == move.direction ||
-                piece.type === PieceType.KING) &&
-                newPos.x in boardArray.indices &&
-                newPos.y in boardArray[0].indices &&
-                boardArray[enemyPos.x][enemyPos.y].piece != null &&
-                boardArray[enemyPos.x][enemyPos.y].piece!!.color != piece.color &&
-                boardArray[newPos.x][newPos.y].piece == null
+                (piece.direction == move.direction || piece.type === PieceType.KING) &&
+                        newPos.x in boardArray.indices &&
+                        newPos.y in boardArray[0].indices &&
+                        boardArray[enemyPos.x][enemyPos.y].piece != null &&
+                        boardArray[enemyPos.x][enemyPos.y].piece !in removedPieces &&
+                        boardArray[enemyPos.x][enemyPos.y].piece!!.color != piece.color &&
+                        boardArray[newPos.x][newPos.y].piece == null
                 )
     }
 
