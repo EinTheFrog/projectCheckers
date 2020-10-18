@@ -11,10 +11,11 @@ class AI {
         for((key, value) in availableTurns) {
             for (moves in value) {
                 //для симуляции хода копируем доску
-                val newBoard = board.clone()
-                val piece = newBoard.getPiece(key.pos)!!
-                newBoard.makeTurn(Turn(piece, moves))
-                viewedTurns[Turn(key, moves)] = minimax(newBoard, maximizingColor, DEPTH - 1)
+/*                val newBoard = board.clone()
+                val piece = newBoard.getPiece(key.pos)!!*/
+                board.makeTurn(Turn(key, moves))
+                viewedTurns[Turn(key, moves)] = minimax(board, maximizingColor, DEPTH - 1)
+                board.cancelLastTurn()
             }
         }
         //возвращаем самый оптимальный ход
@@ -35,11 +36,12 @@ class AI {
         for ((key, value) in availableTurns) {
             for (moves in value) {
                 //для симуляции хода копируем доску
-                val newBoard = board.clone()
-                val piece = newBoard.getPiece(key.pos)!!
-                newBoard.makeTurn(Turn(piece, moves))
+/*                val newBoard = board.clone()
+                val piece = newBoard.getPiece(key.pos)!!*/
+                board.makeTurn(Turn(key, moves))
                 //спускаемся ниже по рекурсии
-                viewedTurns.add(minimax(newBoard, maximizingColor, depth - 1))
+                viewedTurns.add(minimax(board, maximizingColor, depth - 1))
+                board.cancelLastTurn()
             }
         }
 

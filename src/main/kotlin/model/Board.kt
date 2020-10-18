@@ -17,7 +17,9 @@ class Board(
             }
             return 0
         }
-    val removedPieces = mutableListOf<Piece>()
+    private val turns = mutableListOf<Turn>()
+    private val removedPieces = mutableListOf<Piece>()
+    private val toKingCount = mutableMapOf<Piece, Int>()
 
     fun getAvailableTurns(): Map<Piece, List<List<Move>>> {
         val result = HashMap<Piece, List<List<Move>>>()
@@ -125,18 +127,6 @@ class Board(
                 )
     }
 
-    fun makeTurn(turn: Turn) {
-        //изменям расположение фигур на доске и кол-во совершенных ходов
-        for (move in turn.moves) {
-            if (move.isAttack) {
-                attack(turn.piece, move)
-            } else {
-                move(turn.piece, move)
-            }
-        }
-        turnsMade++
-    }
-
     fun move(piece: Piece, move: Move) {
         if (!canPieceMove(piece, move)) {
             throw IllegalArgumentException("Can't move like that")
@@ -155,6 +145,7 @@ class Board(
         val newPos = piece.pos + move.vector
 
         changePiecePosition(piece, newPos)
+        removedPieces.add(boardArray[enemyPos.x][enemyPos.y].piece!!)
         boardArray[enemyPos.x][enemyPos.y].piece = null
     }
 
@@ -170,11 +161,45 @@ class Board(
         if (piece.pos.y == 0 && piece.direction == Direction.UP ||
                 piece.pos.y == 7 && piece.direction == Direction.DOWN) {
             piece.type = PieceType.KING
+            toKingCount[piece] = toKingCount.getOrDefault(piece, 0) + 1
         }
     }
 
-    fun cancelLastTurn() {
+    fun makeTurn(turn: Turn) {
+        //изменям расположение фигур на доске и кол-во совершенных ходов
+        for (move in turn.moves) {
+            if (move.isAttack) {
+                attack(turn.piece, move)
+            } else {
+                move(turn.piece, move)
+            }
+        }
+        turns.add(turn)
+        turnsMade++
+    }
 
+    fun cancelLastTurn() {
+        val lastTurn = turns.last()
+        turns.removeLast()
+        boardArray[lastTurn.piece.pos.x][lastTurn.piece.pos.y].piece = null
+        for (move in lastTurn.moves) {
+            if (lastTurn.piece.pos.y == 0 && lastTurn.piece.direction == Direction.UP ||
+                    lastTurn.piece.pos.y == 7 && lastTurn.piece.direction == Direction.DOWN) {
+                toKingCount[lastTurn.piece] = toKingCount[lastTurn.piece]!! - 1
+                if (toKingCount[lastTurn.piece]!! == 0) {
+                    toKingCount.remove(lastTurn.piece)
+                    lastTurn.piece.type = PieceType.CHECKER
+                }
+            }
+            lastTurn.piece.pos -= move.vector
+            if (move.isAttack) {
+                val removedPiece = removedPieces.last()
+                removedPieces.removeLast()
+                boardArray[removedPiece.pos.x][removedPiece.pos.y].piece = removedPiece
+            }
+        }
+        boardArray[lastTurn.piece.pos.x][lastTurn.piece.pos.y].piece = lastTurn.piece
+        turnsMade--
     }
 
     //функции, упрощающие обращение к фигурам и клеткам
