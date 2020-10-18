@@ -14,7 +14,6 @@ class CellView(
         widthProperty: DoubleBinding,
         val coords: Vector,
         color: Color,
-        private val cell: Cell,
         onClick: (CellView) -> Unit
 ): StackPane() {
     //при смене значения piece должны измняться координаты соответствующего pieceView и его логического представления
@@ -26,7 +25,6 @@ class CellView(
             children.remove(piece)
         }
         field = value
-        cell.piece = value?.piece
     }
 
     init {
@@ -47,9 +45,9 @@ class CellView(
         }
         //задаем характеристики фигур при расстановка в зависимости от расположения клетки
         if (coords.y < 3 && (coords.x + coords.y) % 2 != 0) {
-            piece = PieceView(heightProperty(), widthProperty(), Color.BLACK, Piece(PieceType.CHECKER, coords, 0, Direction.DOWN))
+            piece = PieceView(heightProperty(), widthProperty(), Color.BLACK)
         } else if (coords.y > 4 && (coords.x + coords.y) % 2 != 0) {
-            piece = PieceView(heightProperty(), widthProperty(), Color.WHITE, Piece(PieceType.CHECKER, coords, 1, Direction.UP))
+            piece = PieceView(heightProperty(), widthProperty(), Color.WHITE)
         }
     }
 }

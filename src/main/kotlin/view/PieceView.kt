@@ -15,7 +15,6 @@ class PieceView(
         cellHeight: ReadOnlyDoubleProperty,
         cellWidth: ReadOnlyDoubleProperty,
         color: Color,
-        val piece: Piece
 ): Pane() {
     private var ellipse = Ellipse()
     private var myColor = Color.BLACK
@@ -47,6 +46,5 @@ class PieceView(
             xProperty().bind(ellipse.centerXProperty() - widthProperty() / 2)
             fill = myColor.invert()
         }
-        piece.type = PieceType.KING
     }
 }

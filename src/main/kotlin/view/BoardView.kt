@@ -5,8 +5,7 @@ import javafx.geometry.Pos
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
-import model.Board
-import model.Vector
+import model.*
 import tornadofx.add
 import tornadofx.gridpane
 import tornadofx.rectangle
@@ -41,13 +40,20 @@ class BoardView(
             for (i in 0..7) {
                 for (j in 0..7) {
                     val color = if ((i + j) % 2 == 0) Color.DARKGRAY else Color.GRAY
-                    val cell = CellView(cellHeight, cellWidth, Vector(i, j), color, board[i, j], onCellClick)
+                    val cell = CellView(cellHeight, cellWidth, Vector(i, j), color, onCellClick)
                     cells[i][j] = cell
+                    //задаем характеристики фигур при расстановка в зависимости от расположения клетки
+                    if (j < 3 && (i + j) % 2 != 0) {
+                        board[i, j] = Piece(PieceType.CHECKER, Vector(i, j), 0, Direction.DOWN)
+                    } else if (j > 4 && (i + j) % 2 != 0) {
+                        board[i, j] = Piece(PieceType.CHECKER, Vector(i, j), 1, Direction.UP)
+                    }
                     add(cell)
                 }
             }
         }
     }
+
 
     //функции для удобства взаимодействия с клетками поля
     operator fun get(x: Int, y: Int) = cells[x][y]

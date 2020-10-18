@@ -17,6 +17,7 @@ class Board(
             }
             return 0
         }
+    val removedPieces = mutableListOf<Piece>()
 
     fun getAvailableTurns(): Map<Piece, List<List<Move>>> {
         val result = HashMap<Piece, List<List<Move>>>()
@@ -136,7 +137,7 @@ class Board(
         turnsMade++
     }
 
-    private fun move(piece: Piece, move: Move) {
+    fun move(piece: Piece, move: Move) {
         if (!canPieceMove(piece, move)) {
             throw IllegalArgumentException("Can't move like that")
         }
@@ -145,7 +146,7 @@ class Board(
         changePiecePosition(piece , newPos)
     }
 
-    private fun attack(piece: Piece, move: Move) {
+    fun attack(piece: Piece, move: Move) {
         if (!canPieceAttack(piece, move)) {
             throw IllegalArgumentException("Can't attack like that")
         }
@@ -163,6 +164,17 @@ class Board(
         boardArray[oldPos.x][oldPos.y].piece = null
         boardArray[newPos.x][newPos.y].piece = piece
         piece.pos = newPos
+
+        //шашка становится дамкой и во view, но если мы решим использовать чистый model,
+        //то нам нужно и без контроллера выставлять дамку
+        if (piece.pos.y == 0 && piece.direction == Direction.UP ||
+                piece.pos.y == 7 && piece.direction == Direction.DOWN) {
+            piece.type = PieceType.KING
+        }
+    }
+
+    fun cancelLastTurn() {
+
     }
 
     //функции, упрощающие обращение к фигурам и клеткам
