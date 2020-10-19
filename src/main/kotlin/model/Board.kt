@@ -1,6 +1,6 @@
 package model
 
-import java.lang.IllegalArgumentException
+import kotlin.IllegalArgumentException
 import kotlin.collections.HashMap
 
 class Board(
@@ -158,10 +158,9 @@ class Board(
 
         //шашка становится дамкой и во view, но если мы решим использовать чистый model,
         //то нам нужно и без контроллера выставлять дамку
-        if (piece.pos.y == 0 && piece.direction == Direction.UP ||
-                piece.pos.y == 7 && piece.direction == Direction.DOWN) {
-            piece.type = PieceType.KING
+        if (doesCheckerBecameKing(piece)) {
             toKingCount[piece] = toKingCount.getOrDefault(piece, 0) + 1
+            piece.type = PieceType.KING
         }
     }
 
@@ -178,19 +177,31 @@ class Board(
         turnsMade++
     }
 
+    private fun doesCheckerBecameKing(piece: Piece) = (
+            piece.pos.y == 0 && piece.direction == Direction.UP ||
+            piece.pos.y == 7 && piece.direction == Direction.DOWN
+            )
+
     fun cancelLastTurn() {
         val lastTurn = turns.last()
         turns.removeLast()
         boardArray[lastTurn.piece.pos.x][lastTurn.piece.pos.y].piece = null
         for (move in lastTurn.moves) {
-            if (lastTurn.piece.pos.y == 0 && lastTurn.piece.direction == Direction.UP ||
-                    lastTurn.piece.pos.y == 7 && lastTurn.piece.direction == Direction.DOWN) {
-                toKingCount[lastTurn.piece] = toKingCount[lastTurn.piece]!! - 1
-                if (toKingCount[lastTurn.piece]!! == 0) {
-                    toKingCount.remove(lastTurn.piece)
-                    lastTurn.piece.type = PieceType.CHECKER
+            try {
+                if (doesCheckerBecameKing(lastTurn.piece)) {
+                    if (!toKingCount.containsKey(lastTurn.piece)) {
+                        throw  IllegalArgumentException()
+                    }
+                    toKingCount[lastTurn.piece] = toKingCount[lastTurn.piece]!! - 1
+                    if (toKingCount[lastTurn.piece]!! == 0) {
+                        toKingCount.remove(lastTurn.piece)
+                        lastTurn.piece.type = PieceType.CHECKER
+                    }
                 }
+            } catch (e: NullPointerException) {
+                throw  e
             }
+
             lastTurn.piece.pos -= move.vector
             if (move.isAttack) {
                 val removedPiece = removedPieces.last()

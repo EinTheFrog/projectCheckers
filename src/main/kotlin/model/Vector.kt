@@ -15,7 +15,12 @@ class Vector(val x: Int, val y: Int): Cloneable {
         return x + 31 * y
     }
 
+    override fun toString(): String {
+        return "{Vector{x: $x, y: $y}}"
+    }
+
     public override fun clone(): Vector {
         return Vector(x, y)
     }
+
 }
