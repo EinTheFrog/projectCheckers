@@ -16,7 +16,7 @@ class Vector(val x: Int, val y: Int): Cloneable {
     }
 
     override fun toString(): String {
-        return "{Vector{x: $x, y: $y}}"
+        return "{Vector, x: $x, y: $y}"
     }
 
     public override fun clone(): Vector {

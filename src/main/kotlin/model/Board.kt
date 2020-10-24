@@ -187,19 +187,15 @@ class Board(
         turns.removeLast()
         boardArray[lastTurn.piece.pos.x][lastTurn.piece.pos.y].piece = null
         for (move in lastTurn.moves) {
-            try {
-                if (doesCheckerBecameKing(lastTurn.piece)) {
-                    if (!toKingCount.containsKey(lastTurn.piece)) {
-                        throw  IllegalArgumentException()
-                    }
-                    toKingCount[lastTurn.piece] = toKingCount[lastTurn.piece]!! - 1
-                    if (toKingCount[lastTurn.piece]!! == 0) {
-                        toKingCount.remove(lastTurn.piece)
-                        lastTurn.piece.type = PieceType.CHECKER
-                    }
+            if (doesCheckerBecameKing(lastTurn.piece)) {
+                if (!toKingCount.containsKey(lastTurn.piece)) {
+                    throw  IllegalArgumentException()
                 }
-            } catch (e: NullPointerException) {
-                throw  e
+                toKingCount[lastTurn.piece] = toKingCount[lastTurn.piece]!! - 1
+                if (toKingCount[lastTurn.piece]!! == 0) {
+                    toKingCount.remove(lastTurn.piece)
+                    lastTurn.piece.type = PieceType.CHECKER
+                }
             }
 
             lastTurn.piece.pos -= move.vector
@@ -214,8 +210,6 @@ class Board(
     }
 
     //функции, упрощающие обращение к фигурам и клеткам
-    fun getPiece(pos: Vector) = boardArray[pos.x][pos.y].piece
-
     operator fun get(x: Int, y: Int) = boardArray[x][y]
 
     operator fun set(x: Int, y: Int, piece: Piece) {

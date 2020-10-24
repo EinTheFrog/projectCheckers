@@ -7,7 +7,7 @@ class Piece (
     val direction: Direction
 ): Cloneable {
 
-    override fun hashCode() = toString().hashCode()
+    override fun hashCode() = pos.hashCode() + 31 * color
 
     override fun equals(other: Any?): Boolean = toString() == other.toString()
 
@@ -16,6 +16,6 @@ class Piece (
     }
 
     override fun toString(): String {
-        return "{Piece{type: $type, pos: $pos, color: $color, direction: $direction}}"
+        return "{Piece, type: $type, pos: $pos, color: $color, direction: $direction}"
     }
 }
