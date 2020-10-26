@@ -1,6 +1,6 @@
 package model
 
-class Cell (piece: Piece?, val pos: Vector): Cloneable {
+class Cell (piece: Piece?, val pos: Vector) {
     var piece: Piece? = null
     set(value) {
         field = value
@@ -16,10 +16,6 @@ class Cell (piece: Piece?, val pos: Vector): Cloneable {
 
     override fun hashCode(): Int {
         return pos.hashCode() + 31 * piece.hashCode()
-    }
-
-    public override fun clone(): Cell {
-        return Cell(piece?.clone(), pos.clone())
     }
 }
 

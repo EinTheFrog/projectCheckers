@@ -21,23 +21,20 @@ class AI {
 
     private fun minimax(board: Board, maximizingColor: Int, depth: Int): Int {
         if (depth == 0) {
-            return board.cost
+            return board.getCost(maximizingColor)
         }
         val color = board.turnsMade % 2
 
         val availableTurns = board.getAvailableTurns()
         //если ходов больше нет, то проигрывает тот, у кого нет ходов
-        if (availableTurns.isEmpty()) return if (color == maximizingColor) Int.MIN_VALUE else Int.MAX_VALUE
+        if (availableTurns.isEmpty()) {
+            val maxWinCost = 64 * PieceType.KING.cost - board.turnsMade
+            return if (color == maximizingColor) -maxWinCost else maxWinCost
+        }
 
         val viewedTurns = mutableListOf<Int>()
-        if (availableTurns.any { entry -> entry.key.pos == Vector(2, 1) && entry.key.color == 1 && entry.value.any{e -> e.any{it == Move.GO_DOWN_RIGHT }}}) {
-            val a = 0
-        }
         for ((piece, turns) in availableTurns) {
             for (moves in turns) {
-                if (piece.pos == Vector(2, 1) && piece.color == 1 && moves[0] == Move.GO_DOWN_RIGHT) {
-                    val a = 0
-                }
                 board.makeTurn(Turn(piece, moves))
                 //спускаемся ниже по рекурсии
                 viewedTurns.add(minimax(board, maximizingColor, depth - 1))

@@ -7,19 +7,21 @@ class Board(
         var turnsMade: Int,
         private val boardArray: Array<Array<Cell>> = Array(8) {i -> Array(8) {j -> Cell(null, Vector(i, j)) } }
 ): Cloneable {
-    val cost: Int
-        get() {
-            var result = 0
-            for (i in boardArray.indices) {
-                for (j in boardArray[i].indices) {
-                    result += boardArray[i][j].piece?.type?.cost ?: 0
-                }
-            }
-            return 0
-        }
     private val turns = mutableListOf<Turn>()
     private val removedPieces = mutableListOf<Piece>()
-    private val toKingCount = mutableMapOf<Piece, Int>()
+    private val toKingCount = mutableMapOf<Int, Int>()
+
+    fun getCost(maximizingColor: Int): Int {
+        var result = 0
+        for (i in boardArray.indices) {
+            for (j in boardArray[i].indices) {
+                val col = if (boardArray[i][j].piece?.color == maximizingColor) 1 else -1
+                val locCost = boardArray[i][j].piece?.type?.cost ?: 0
+                result += locCost * col
+            }
+        }
+        return result
+    }
 
     fun getAvailableTurns(): Map<Piece, List<List<Move>>> {
         val result = HashMap<Piece, List<List<Move>>>()
@@ -63,7 +65,7 @@ class Board(
 
     private fun getAdditionalAttacks(piece: Piece, newPos: Vector, removedPieces: Set<Piece>): List<List<Move>> {
         val result = mutableListOf<List<Move>>()
-        val phantomPiece = Piece(piece.type, newPos, piece.color, piece.direction)
+        val phantomPiece = Piece(piece.id, piece.type, newPos, piece.color, piece.direction)
         result.addAttacks(phantomPiece, removedPieces)
         return result
     }
@@ -158,10 +160,7 @@ class Board(
 
         //шашка становится дамкой?
         if (didCheckerBecomeKing(piece)) {
-            toKingCount[piece] = if (toKingCount.containsKey(piece)) toKingCount[piece]!! + 1 else 1
-            if (toKingCount[piece]!! > 1) {
-                val a = 0
-            }
+            toKingCount[piece.id] = if (toKingCount.containsKey(piece.id)) toKingCount[piece.id]!! + 1 else 1
             piece.type = PieceType.KING
         }
     }
@@ -190,12 +189,12 @@ class Board(
         boardArray[lastTurn.piece.pos.x][lastTurn.piece.pos.y].piece = null
         for (move in lastTurn.moves) {
             if (didCheckerBecomeKing(lastTurn.piece)) {
-                if (!toKingCount.containsKey(lastTurn.piece)) {
+                if (!toKingCount.containsKey(lastTurn.piece.id)) {
                     throw  IllegalArgumentException()
                 }
-                toKingCount[lastTurn.piece] = toKingCount[lastTurn.piece]!! - 1
-                if (toKingCount[lastTurn.piece]!! == 0) {
-                    toKingCount.remove(lastTurn.piece)
+                toKingCount[lastTurn.piece.id] = toKingCount[lastTurn.piece.id]!! - 1
+                if (toKingCount[lastTurn.piece.id]!! == 0) {
+                    toKingCount.remove(lastTurn.piece.id)
                     lastTurn.piece.type = PieceType.CHECKER
                 }
             }
