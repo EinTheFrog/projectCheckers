@@ -153,6 +153,9 @@ class MyController: Controller() {
         oldPos = aiTurn.piece.pos
         //последовательно совершаем все ходы ИИ
         for (move in aiTurn.moves) {
+            if (aiTurn.moves.size > 1 && !move.isAttack) {
+                val a = 0
+            }
             val newCell = boardView!![aiTurn.piece.pos.x + move.vector.x, aiTurn.piece.pos.y + move.vector.y]!!
             newPos = newCell.coords
             if (move.isAttack) {

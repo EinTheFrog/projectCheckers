@@ -156,10 +156,12 @@ class Board(
         boardArray[newPos.x][newPos.y].piece = piece
         piece.pos = newPos
 
-        //шашка становится дамкой и во view, но если мы решим использовать чистый model,
-        //то нам нужно и без контроллера выставлять дамку
-        if (doesCheckerBecameKing(piece)) {
-            toKingCount[piece] = toKingCount.getOrDefault(piece, 0) + 1
+        //шашка становится дамкой?
+        if (didCheckerBecomeKing(piece)) {
+            toKingCount[piece] = if (toKingCount.containsKey(piece)) toKingCount[piece]!! + 1 else 1
+            if (toKingCount[piece]!! > 1) {
+                val a = 0
+            }
             piece.type = PieceType.KING
         }
     }
@@ -177,7 +179,7 @@ class Board(
         turnsMade++
     }
 
-    private fun doesCheckerBecameKing(piece: Piece) = (
+    private fun didCheckerBecomeKing(piece: Piece) = (
             piece.pos.y == 0 && piece.direction == Direction.UP ||
             piece.pos.y == 7 && piece.direction == Direction.DOWN
             )
@@ -187,7 +189,7 @@ class Board(
         turns.removeLast()
         boardArray[lastTurn.piece.pos.x][lastTurn.piece.pos.y].piece = null
         for (move in lastTurn.moves) {
-            if (doesCheckerBecameKing(lastTurn.piece)) {
+            if (didCheckerBecomeKing(lastTurn.piece)) {
                 if (!toKingCount.containsKey(lastTurn.piece)) {
                     throw  IllegalArgumentException()
                 }
@@ -216,7 +218,7 @@ class Board(
         boardArray[x][y].piece = piece
     }
 
-    public override fun clone(): Board {
+/*    public override fun clone(): Board {
         val boardArrayClone: Array<Array<Cell>> = Array(8) {i -> Array(8) {j -> Cell(null, Vector(i, j)) }}
         for (i in boardArray.indices) {
             for (j in boardArray[0].indices) {
@@ -224,5 +226,5 @@ class Board(
             }
         }
         return Board(turnsMade, boardArrayClone)
-    }
+    }*/
 }
