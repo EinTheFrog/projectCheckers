@@ -6,7 +6,7 @@ class BoardTest {
     @Test
     fun testCanPieceMakeThisMove() {
         val board = Board(0)
-        val blackChecker = Piece(PieceType.CHECKER, Vector(1, 0), 0, Direction.DOWN)
+        val blackChecker = Piece(1, PieceType.CHECKER, Vector(1, 0), 0, Direction.DOWN)
         board[1, 0].piece = blackChecker
         assert(!board.canPieceMakeThisMove(blackChecker, Move.ATTACK_DOWN_LEFT))
         assert(!board.canPieceMakeThisMove(blackChecker, Move.GO_UP_LEFT))
@@ -17,8 +17,8 @@ class BoardTest {
     @Test
     fun testGetAvailableTurns() {
         val board = Board(0)
-        val blackChecker = Piece(PieceType.CHECKER, Vector(1, 0), 0, Direction.DOWN)
-        val whiteChecker = Piece(PieceType.CHECKER, Vector(7, 0), 1, Direction.UP)
+        val blackChecker = Piece(2, PieceType.CHECKER, Vector(1, 0), 0, Direction.DOWN)
+        val whiteChecker = Piece(3, PieceType.CHECKER, Vector(7, 0), 1, Direction.UP)
         board[1, 0].piece = blackChecker
         board[7, 0].piece = whiteChecker
         assert(board.getAvailableTurns().size == 1)
@@ -28,8 +28,8 @@ class BoardTest {
     @Test
     fun testMovePiece() {
         val board = Board(0)
-        val blackChecker = Piece(PieceType.CHECKER, Vector(1, 0), 0, Direction.DOWN)
-        val whiteChecker = Piece(PieceType.CHECKER, Vector(0, 7), 1, Direction.UP)
+        val blackChecker = Piece(4, PieceType.CHECKER, Vector(1, 0), 0, Direction.DOWN)
+        val whiteChecker = Piece(5, PieceType.CHECKER, Vector(0, 7), 1, Direction.UP)
         board[1, 0].piece = blackChecker
         board[0, 7].piece = whiteChecker
         board.makeTurn(Turn(blackChecker, listOf(Move.GO_DOWN_LEFT)))
@@ -43,8 +43,8 @@ class BoardTest {
     @Test
     fun testAttackWithPiece() {
         val board = Board(0)
-        val blackChecker = Piece(PieceType.CHECKER, Vector(1, 0), 0, Direction.DOWN)
-        val whiteChecker = Piece(PieceType.CHECKER, Vector(2, 1), 1, Direction.UP)
+        val blackChecker = Piece(6, PieceType.CHECKER, Vector(1, 0), 0, Direction.DOWN)
+        val whiteChecker = Piece(7, PieceType.CHECKER, Vector(2, 1), 1, Direction.UP)
         board[1, 0].piece = blackChecker
         board[2, 1].piece = whiteChecker
         board.makeTurn(Turn(blackChecker, listOf(Move.ATTACK_DOWN_RIGHT)))
@@ -58,9 +58,9 @@ class BoardTest {
         blackChecker.pos = Vector(1, 0)
         board[1, 0].piece = blackChecker
 
-        val whiteChecker1 = Piece(PieceType.CHECKER, Vector(2, 1), 1, Direction.UP)
-        val whiteChecker2 = Piece(PieceType.CHECKER, Vector(4, 3), 1, Direction.UP)
-        val whiteChecker3 = Piece(PieceType.CHECKER, Vector(6, 3), 1, Direction.UP)
+        val whiteChecker1 = Piece(8, PieceType.CHECKER, Vector(2, 1), 1, Direction.UP)
+        val whiteChecker2 = Piece(9, PieceType.CHECKER, Vector(4, 3), 1, Direction.UP)
+        val whiteChecker3 = Piece(10, PieceType.CHECKER, Vector(6, 3), 1, Direction.UP)
         board[2, 1] = whiteChecker1
         board[4, 3] = whiteChecker2
         board[6, 3] = whiteChecker3

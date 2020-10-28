@@ -1,5 +1,7 @@
 package model
 
+import java.lang.Exception
+import java.lang.IndexOutOfBoundsException
 import kotlin.IllegalArgumentException
 import kotlin.collections.HashMap
 
@@ -135,7 +137,7 @@ class Board(
         }
 
         val newPos = piece.pos + move.vector
-        changePiecePosition(piece , newPos)
+        changePiecePos(piece , newPos, true)
     }
 
     fun attack(piece: Piece, move: Move) {
@@ -146,20 +148,19 @@ class Board(
         val enemyPos = piece.pos + move.vector / 2
         val newPos = piece.pos + move.vector
 
-        changePiecePosition(piece, newPos)
+        changePiecePos(piece, newPos, true)
         removedPieces.add(boardArray[enemyPos.x][enemyPos.y].piece!!)
         boardArray[enemyPos.x][enemyPos.y].piece = null
     }
 
-    private fun changePiecePosition(piece: Piece, newPos: Vector) {
+    private fun changePiecePos(piece: Piece, newPos: Vector, needToCheckKing: Boolean = false) {
         val oldPos = piece.pos
-
         boardArray[oldPos.x][oldPos.y].piece = null
         boardArray[newPos.x][newPos.y].piece = piece
         piece.pos = newPos
 
         //шашка становится дамкой?
-        if (didCheckerBecomeKing(piece)) {
+        if (needToCheckKing && didCheckerBecomeKing(piece)) {
             toKingCount[piece.id] = if (toKingCount.containsKey(piece.id)) toKingCount[piece.id]!! + 1 else 1
             piece.type = PieceType.KING
         }
@@ -186,8 +187,11 @@ class Board(
     fun cancelLastTurn() {
         val lastTurn = turns.last()
         turns.removeLast()
-        boardArray[lastTurn.piece.pos.x][lastTurn.piece.pos.y].piece = null
-        for (move in lastTurn.moves) {
+
+        for (moveInd in lastTurn.moves.size - 1 downTo  0) {
+            val move = lastTurn.moves[moveInd]
+            val newPos = lastTurn.piece.pos - move.vector
+
             if (didCheckerBecomeKing(lastTurn.piece)) {
                 if (!toKingCount.containsKey(lastTurn.piece.id)) {
                     throw  IllegalArgumentException()
@@ -199,15 +203,23 @@ class Board(
                 }
             }
 
-            lastTurn.piece.pos -= move.vector
+            changePiecePos(lastTurn.piece, newPos)
+
             if (move.isAttack) {
                 val removedPiece = removedPieces.last()
                 removedPieces.removeLast()
                 boardArray[removedPiece.pos.x][removedPiece.pos.y].piece = removedPiece
             }
         }
+
         boardArray[lastTurn.piece.pos.x][lastTurn.piece.pos.y].piece = lastTurn.piece
         turnsMade--
+
+        //debug
+/*        if (toKingCount.containsKey(lastTurn.piece.id) && lastTurn.piece.type == PieceType.CHECKER) {
+            val a = didCheckerBecomeKing(lastTurn.piece)
+            val b = a
+        }*/
     }
 
     //функции, упрощающие обращение к фигурам и клеткам
@@ -216,14 +228,4 @@ class Board(
     operator fun set(x: Int, y: Int, piece: Piece) {
         boardArray[x][y].piece = piece
     }
-
-/*    public override fun clone(): Board {
-        val boardArrayClone: Array<Array<Cell>> = Array(8) {i -> Array(8) {j -> Cell(null, Vector(i, j)) }}
-        for (i in boardArray.indices) {
-            for (j in boardArray[0].indices) {
-                boardArrayClone[i][j] = boardArray[i][j].clone()
-            }
-        }
-        return Board(turnsMade, boardArrayClone)
-    }*/
 }

@@ -1,5 +1,7 @@
 package controller
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import model.*
@@ -52,7 +54,6 @@ class MyController: Controller() {
                     attackWithPiece(cell, move)
                 } else if (!board!!.getAvailableTurns().values.any{ it -> it.any{ it -> it.any{it.isAttack}}}){
                     movePiece(cell, move)
-                    endTurn()
                 } else {
                     chosenPiece?.glow(false)
                     chosenPiece = null
@@ -114,6 +115,7 @@ class MyController: Controller() {
         boardView!![oldPos!!.x, oldPos!!.y] = null
         newCell.piece = chosenPiece
         board!!.move(board!![oldPos!!.x, oldPos!!.y].piece!!, move)
+        endTurn()
     }
 
     private fun attackWithPiece(newCell: CellView, attackMove: Move) {
@@ -152,7 +154,13 @@ class MyController: Controller() {
         chosenPiece = boardView!![aiTurn.piece.pos.x, aiTurn.piece.pos.y]!!.piece
         oldPos = aiTurn.piece.pos
         //последовательно совершаем все ходы ИИ
-        for (move in aiTurn.moves) {
+        for (i in aiTurn.moves.indices) {
+            val sTime = System.currentTimeMillis()
+            val move = aiTurn.moves[i]
+            if (i > 0) {
+                runBlocking { launch { delay(1000) } }
+            }
+
             val newCell = boardView!![aiTurn.piece.pos.x + move.vector.x, aiTurn.piece.pos.y + move.vector.y]!!
             newPos = newCell.coords
             if (move.isAttack) {
@@ -160,9 +168,8 @@ class MyController: Controller() {
             }
             else {
                 movePiece(newCell, move)
-                endTurn()
             }
-            runBlocking { launch { suspend { 100 } } }
+            println(System.currentTimeMillis() - sTime)
         }
 
         if (board!!.getAvailableTurns().isEmpty()) {

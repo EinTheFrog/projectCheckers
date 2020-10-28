@@ -7,8 +7,8 @@ class AITest {
         val ai = AI()
 
         val board = Board(0)
-        val blackChecker = Piece(PieceType.CHECKER, Vector(1, 0), 0, Direction.DOWN)
-        val whiteChecker = Piece(PieceType.CHECKER, Vector(2, 1), 1, Direction.UP)
+        val blackChecker = Piece(1, PieceType.CHECKER, Vector(1, 0), 0, Direction.DOWN)
+        val whiteChecker = Piece(2, PieceType.CHECKER, Vector(2, 1), 1, Direction.UP)
         board[1, 0].piece = blackChecker
         board[2, 1].piece = whiteChecker
 

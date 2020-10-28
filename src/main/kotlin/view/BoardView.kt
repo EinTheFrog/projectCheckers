@@ -44,9 +44,9 @@ class BoardView(
                     cells[i][j] = cell
                     //задаем характеристики фигур при расстановка в зависимости от расположения клетки
                     if (j < 3 && (i + j) % 2 != 0) {
-                        board[i, j] = Piece(i * j + j, PieceType.CHECKER, Vector(i, j), 0, Direction.DOWN)
+                        board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), 0, Direction.DOWN)
                     } else if (j > 4 && (i + j) % 2 != 0) {
-                        board[i, j] = Piece(i * j + j, PieceType.CHECKER, Vector(i, j), 1, Direction.UP)
+                        board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), 1, Direction.UP)
                     }
                     add(cell)
                 }

@@ -16,7 +16,9 @@ class AI {
             }
         }
         //возвращаем самый оптимальный ход
-        return viewedTurns.maxByOrNull { it.value }?.key ?: throw Exception("No turns left")
+        return if (board.turnsMade % 2 == maximizingColor)
+            viewedTurns.maxByOrNull { it.value }?.key ?: throw Exception("No turns have left")
+        else viewedTurns.minByOrNull { it.value }?.key ?: throw Exception("No turns have left")
     }
 
     private fun minimax(board: Board, maximizingColor: Int, depth: Int): Int {
@@ -38,6 +40,9 @@ class AI {
                 board.makeTurn(Turn(piece, moves))
                 //спускаемся ниже по рекурсии
                 viewedTurns.add(minimax(board, maximizingColor, depth - 1))
+                if (moves.any{it.isAttack}) {
+                    val a = 0;
+                }
                 board.cancelLastTurn()
             }
         }
