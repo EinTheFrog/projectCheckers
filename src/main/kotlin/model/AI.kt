@@ -40,9 +40,6 @@ class AI {
                 board.makeTurn(Turn(piece, moves))
                 //спускаемся ниже по рекурсии
                 viewedTurns.add(minimax(board, maximizingColor, depth - 1))
-                if (moves.any{it.isAttack}) {
-                    val a = 0;
-                }
                 board.cancelLastTurn()
             }
         }

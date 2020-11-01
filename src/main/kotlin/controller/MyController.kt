@@ -27,7 +27,7 @@ class MyController: Controller() {
     var gameMode = GameMode.GAME
 
     enum class GameMode {
-        GAME, MENU
+        GAME, MENU, PAUSE
     }
 
     //функция для обработки нажатия на клетку
@@ -66,7 +66,7 @@ class MyController: Controller() {
         when {
             chosenPiece != null -> choosePiece(null, null)
             gameMode == GameMode.GAME -> openMenu()
-            else -> closeMenu()
+            gameMode == GameMode.MENU -> closeMenu()
         }
     }
 
@@ -97,11 +97,8 @@ class MyController: Controller() {
         if (board == null) {
             throw IllegalStateException("Board hasn't been set")
         }
-        //увеличиваем кол-во ходов, обнуляем выбранную фигуру
+        //увеличиваем кол-во ходов, обнуляем выбранную фигуру и передаем ход другому игроку
         board!!.turnsMade++
-        if (board!![newPos!!.x, newPos!!.y].piece!!.type == PieceType.KING) {
-            chosenPiece!!.becomeKing()
-        }
         chosenPiece?.glow(false)
         chosenPiece = null
         isPlayerTurn = board!!.turnsMade % 2 == 0
@@ -115,6 +112,9 @@ class MyController: Controller() {
         boardView!![oldPos!!.x, oldPos!!.y] = null
         newCell.piece = chosenPiece
         board!!.move(board!![oldPos!!.x, oldPos!!.y].piece!!, move)
+        if (board!![newPos!!.x, newPos!!.y].piece!!.type == PieceType.KING) {
+            chosenPiece!!.becomeKing()
+        }
         endTurn()
     }
 
@@ -129,8 +129,12 @@ class MyController: Controller() {
         boardView!![oldPos!!.x, oldPos!!.y] = null
         newCell.piece = chosenPiece
         board!!.attack(board!![oldPos!!.x, oldPos!!.y].piece!!, attackMove)
+        if (board!![newPos!!.x, newPos!!.y].piece!!.type == PieceType.KING) {
+            chosenPiece!!.becomeKing()
+        }
         if (!board!!.getAvailableMovesForPiece(board!![newPos!!.x, newPos!!.y].piece!!).any{it.first().isAttack}) {
             endTurn()
+            return
         }
         oldPos = newPos!!.clone()
         newPos = null
@@ -155,12 +159,12 @@ class MyController: Controller() {
         oldPos = aiTurn.piece.pos
         //последовательно совершаем все ходы ИИ
         for (i in aiTurn.moves.indices) {
-            val sTime = System.currentTimeMillis()
             val move = aiTurn.moves[i]
             if (i > 0) {
-                runBlocking { launch { delay(1000) } }
+                gameMode = GameMode.PAUSE
+                runBlocking(Dispatchers.Unconfined) { launch { delay(1000) } }
+                gameMode = GameMode.GAME
             }
-
             val newCell = boardView!![aiTurn.piece.pos.x + move.vector.x, aiTurn.piece.pos.y + move.vector.y]!!
             newPos = newCell.coords
             if (move.isAttack) {
@@ -169,7 +173,6 @@ class MyController: Controller() {
             else {
                 movePiece(newCell, move)
             }
-            println(System.currentTimeMillis() - sTime)
         }
 
         if (board!!.getAvailableTurns().isEmpty()) {
