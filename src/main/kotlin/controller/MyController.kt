@@ -1,14 +1,24 @@
 package controller
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import javafx.scene.input.KeyCode
 import model.*
 import tornadofx.Controller
-import tornadofx.add
-import tornadofx.removeFromParent
+import tornadofx.FXEvent
 import view.*
+
+class KeyEvent(val code: KeyCode): FXEvent()
+
+class ClickEvent(val cell: CellView): FXEvent()
+
+class MoveEvent(val pieceOldPos: Vector, val pieceNewPos: Vector): FXEvent()
+
+class RemoveEvent(val piecePos: Vector): FXEvent()
+
+object OpenMenuEvent: FXEvent()
+
+object CloseMenuEvent: FXEvent()
+
+object EndGameEvent: FXEvent()
 
 class MyController: Controller() {
     private var board: Board? = null
@@ -28,6 +38,18 @@ class MyController: Controller() {
 
     enum class GameMode {
         GAME, MENU, PAUSE
+    }
+
+    init {
+        subscribe<KeyEvent> {
+            when (it.code) {
+                KeyCode.ESCAPE -> onEsc()
+                KeyCode.ENTER -> playAITurn()
+            }
+        }
+        subscribe<ClickEvent>{
+            clickOnCell(it.cell)
+        }
     }
 
     //функция для обработки нажатия на клетку
@@ -51,9 +73,9 @@ class MyController: Controller() {
             val move = defineCorrectMove(oldPos!!, newPos!!)
             if (move != null && board?.canPieceMakeThisMove(board!![oldPos!!.x, oldPos!!.y].piece!!, move) == true) {
                 if (move.isAttack) {
-                    attackWithPiece(cell, move)
+                    attackWithPiece(move)
                 } else if (!board!!.getAvailableTurns().values.any{ it -> it.any{ it -> it.any{it.isAttack}}}){
-                    movePiece(cell, move)
+                    movePiece(move)
                 } else {
                     chosenPiece?.glow(false)
                     chosenPiece = null
@@ -62,7 +84,7 @@ class MyController: Controller() {
         }
     }
 
-    fun onEsc() {
+    private fun onEsc() {
         when {
             chosenPiece != null -> choosePiece(null, null)
             gameMode == GameMode.GAME -> openMenu()
@@ -71,17 +93,20 @@ class MyController: Controller() {
     }
 
     private fun openMenu() {
-        find<GameView>().add(find<GameMenu>().root)
+        //find<GameView>().root.add(find<GameMenu>().root)
+        fire(OpenMenuEvent)
         gameMode = GameMode.MENU
     }
 
     private fun openLoseMenu() {
-        find<GameView>().add(find<LoseMenu>().root)
+        //find<GameView>().root.add(find<LoseMenu>().root)
+        fire(EndGameEvent)
         gameMode = GameMode.MENU
     }
 
     private fun closeMenu() {
-        find<GameMenu>().removeFromParent()
+        //find<GameMenu>().removeFromParent()
+        fire(CloseMenuEvent)
         gameMode = GameMode.GAME
     }
 
@@ -104,34 +129,23 @@ class MyController: Controller() {
         isPlayerTurn = board!!.turnsMade % 2 == 0
     }
 
-    private fun movePiece(newCell: CellView, move: Move) {
+    private fun movePiece(move: Move) {
         if (chosenPiece == null) {
             throw IllegalStateException("Piece hasn't been set")
         }
         //убираем фигуру со старой клетки и ставим на новую
-        boardView!![oldPos!!.x, oldPos!!.y] = null
-        newCell.piece = chosenPiece
         board!!.move(board!![oldPos!!.x, oldPos!!.y].piece!!, move)
-        if (board!![newPos!!.x, newPos!!.y].piece!!.type == PieceType.KING) {
-            chosenPiece!!.becomeKing()
-        }
+        fire(MoveEvent(oldPos!!, newPos!!))
         endTurn()
     }
 
-    private fun attackWithPiece(newCell: CellView, attackMove: Move) {
+    private fun attackWithPiece(attackMove: Move) {
         if (chosenPiece == null) {
             throw IllegalStateException("Piece hasn't been set")
         }
-        val attackedCell = boardView!![(oldPos!!.x + newCell.coords.x) / 2, (oldPos!!.y + newCell.coords.y) / 2]
-        //убираем с клетки атакованную фигуру
-        attackedCell!!.piece = null
-        //убираем фигуру со старой клетки и ставим на новую
-        boardView!![oldPos!!.x, oldPos!!.y] = null
-        newCell.piece = chosenPiece
         board!!.attack(board!![oldPos!!.x, oldPos!!.y].piece!!, attackMove)
-        if (board!![newPos!!.x, newPos!!.y].piece!!.type == PieceType.KING) {
-            chosenPiece!!.becomeKing()
-        }
+        fire(MoveEvent(oldPos!!, newPos!!))
+        fire(RemoveEvent((oldPos!! + newPos!!)/2))
         if (!board!!.getAvailableMovesForPiece(board!![newPos!!.x, newPos!!.y].piece!!).any{it.first().isAttack}) {
             endTurn()
             return
@@ -142,7 +156,7 @@ class MyController: Controller() {
 
     private fun defineCorrectMove(curPos: Vector, newPos: Vector): Move? = Move.values().find { it.vector ==  newPos - curPos}
 
-    fun playAITurn() {
+    private fun playAITurn() {
         if (gameMode != GameMode.GAME) return
         if (board == null) {
             throw IllegalStateException("Board hasn't been set")
@@ -154,6 +168,7 @@ class MyController: Controller() {
             openLoseMenu()
             return
         }
+
         //выбираем фигуру по ходу ИИ
         chosenPiece = boardView!![aiTurn.piece.pos.x, aiTurn.piece.pos.y]!!.piece
         oldPos = aiTurn.piece.pos
@@ -162,16 +177,15 @@ class MyController: Controller() {
             val move = aiTurn.moves[i]
             if (i > 0) {
                 gameMode = GameMode.PAUSE
-                runBlocking(Dispatchers.Unconfined) { launch { delay(1000) } }
+                Thread.sleep(1000)
                 gameMode = GameMode.GAME
             }
-            val newCell = boardView!![aiTurn.piece.pos.x + move.vector.x, aiTurn.piece.pos.y + move.vector.y]!!
-            newPos = newCell.coords
+            newPos = Vector(aiTurn.piece.pos.x + move.vector.x, aiTurn.piece.pos.y + move.vector.y)
             if (move.isAttack) {
-                attackWithPiece(newCell, move)
+                attackWithPiece(move)
             }
             else {
-                movePiece(newCell, move)
+                movePiece(move)
             }
         }
 

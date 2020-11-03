@@ -214,12 +214,6 @@ class Board(
 
         boardArray[lastTurn.piece.pos.x][lastTurn.piece.pos.y].piece = lastTurn.piece
         turnsMade--
-
-        //debug
-/*        if (toKingCount.containsKey(lastTurn.piece.id) && lastTurn.piece.type == PieceType.CHECKER) {
-            val a = didCheckerBecomeKing(lastTurn.piece)
-            val b = a
-        }*/
     }
 
     //функции, упрощающие обращение к фигурам и клеткам

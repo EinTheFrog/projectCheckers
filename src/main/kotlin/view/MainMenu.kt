@@ -1,6 +1,5 @@
 package view
 
-import javafx.scene.Parent
 import tornadofx.View
 import tornadofx.button
 import tornadofx.vbox
@@ -15,7 +14,6 @@ class MainMenu: View() {
 
     private fun startGame() {
         replaceWith(find<GameView>(), sizeToScene = true, centerOnScreen = true)
-        find<GameView>().startNewGame()
         currentWindow?.sizeToScene()
     }
 }

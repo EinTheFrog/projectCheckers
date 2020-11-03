@@ -54,6 +54,19 @@ class BoardView(
         }
     }
 
+    fun changePiecePos(oldPos: Vector, newPos: Vector) {
+        val piece = cells[oldPos.x][oldPos.y]!!.piece!!
+        cells[oldPos.x][oldPos.y]!!.piece = null
+        cells[newPos.x][newPos.y]!!.piece = piece
+        if (board!![newPos!!.x, newPos!!.y].piece!!.type == PieceType.KING) {
+            piece.becomeKing()
+        }
+    }
+
+    fun removePiece(pos: Vector) {
+        cells[pos.x][pos.y]!!.piece = null
+    }
+
 
     //функции для удобства взаимодействия с клетками поля
     operator fun get(x: Int, y: Int) = cells[x][y]
