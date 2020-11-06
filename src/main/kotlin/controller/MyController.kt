@@ -53,7 +53,7 @@ class MyController: Controller() {
     }
 
     //функция для обработки нажатия на клетку
-    fun clickOnCell(cell: CellView) {
+    private fun clickOnCell(cell: CellView) {
         if (gameMode != GameMode.GAME) return
         //мы должны знать доску, на которой находится клетка
         if (boardView == null) {
@@ -93,19 +93,16 @@ class MyController: Controller() {
     }
 
     private fun openMenu() {
-        //find<GameView>().root.add(find<GameMenu>().root)
         fire(OpenMenuEvent)
         gameMode = GameMode.MENU
     }
 
     private fun openLoseMenu() {
-        //find<GameView>().root.add(find<LoseMenu>().root)
         fire(EndGameEvent)
         gameMode = GameMode.MENU
     }
 
     private fun closeMenu() {
-        //find<GameMenu>().removeFromParent()
         fire(CloseMenuEvent)
         gameMode = GameMode.GAME
     }

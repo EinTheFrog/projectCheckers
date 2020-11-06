@@ -58,8 +58,8 @@ class AI {
     }
 
     companion object {
-        private const val DEPTH = 5
+        private const val DEPTH = 7
+        private val BIG_NUMBER = 1024 * PieceType.KING.cost
     }
 }
 
-private val BIG_NUMBER = 1024 * PieceType.KING.cost
