@@ -12,6 +12,7 @@ class GameView: View() {
     //создаем контроллер и доску
     private var board = Board(0)
     private val controller = find<MyController>()
+    lateinit var boardView: BoardView
 
     //добавляем корневой элемент
     override val root = createTable()
@@ -28,6 +29,8 @@ class GameView: View() {
     }
 
     fun goToMainMenu() {
+        boardView.refresh()
+        controller.gameMode = MyController.GameMode.GAME
         replaceWith(find<MainMenu>(), sizeToScene = true, centerOnScreen = true)
         currentWindow?.sizeToScene()
     }
@@ -37,7 +40,7 @@ class GameView: View() {
         //которое должно выполнятся при нажатии на клетку
         val pHeight = this.heightProperty()
         val pWidth = this.widthProperty()
-        var boardView = BoardView(pHeight, pWidth, board) { cellView -> fire(ClickEvent(cellView)) }
+        boardView = BoardView(pHeight, pWidth, board) { cellView -> fire(ClickEvent(cellView)) }
         //передаем значение boardView контроллеру
         controller.boardView = boardView
         //добавляем boardView к корневому элементу

@@ -3,6 +3,7 @@ package view
 import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.geometry.Pos
 import javafx.scene.input.KeyCode
+import javafx.scene.layout.GridPane
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import model.*
@@ -20,6 +21,7 @@ class BoardView(
         onCellClick: (CellView) -> Unit
 ): StackPane() {
     private val cells = Array(8) {Array<CellView?>(8) {null} }
+    private val gridPane: GridPane
     init {
         //запрещаем фокусироваться на доску
         isFocusTraversable = true
@@ -33,7 +35,7 @@ class BoardView(
         val boardWidth = widthProperty.multiply(0.9)
 
         //создаем клетки
-        gridpane {
+        gridPane = gridpane {
             this.alignment = Pos.CENTER
             val cellHeight = boardHeight.divide(8)
             val cellWidth = boardWidth.divide(8)
@@ -45,10 +47,31 @@ class BoardView(
                     //задаем характеристики фигур при расстановка в зависимости от расположения клетки
                     if (j < 3 && (i + j) % 2 != 0) {
                         board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), 0, Direction.DOWN)
+                        cell.piece = PieceView(cell.heightProperty(), cell.widthProperty(), Color.BLACK)
                     } else if (j > 4 && (i + j) % 2 != 0) {
                         board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), 1, Direction.UP)
+                        cell.piece = PieceView(cell.heightProperty(), cell.widthProperty(), Color.WHITE)
                     }
                     add(cell)
+                }
+            }
+        }
+    }
+
+    fun refresh() {
+        for (i in 0..7) {
+            for (j in 0..7) {
+                removePiece(Vector(i, j))
+                board[i, j].piece = null
+                board.turnsMade = 0
+
+                val cell = cells[i][j]!!
+                if (j < 3 && (i + j) % 2 != 0) {
+                    board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), 0, Direction.DOWN)
+                    cell.piece = PieceView(cell.heightProperty(), cell.widthProperty(), Color.BLACK)
+                } else if (j > 4 && (i + j) % 2 != 0) {
+                    board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), 1, Direction.UP)
+                    cell.piece = PieceView(cell.heightProperty(), cell.widthProperty(), Color.WHITE)
                 }
             }
         }
@@ -58,7 +81,7 @@ class BoardView(
         val piece = cells[oldPos.x][oldPos.y]!!.piece!!
         cells[oldPos.x][oldPos.y]!!.piece = null
         cells[newPos.x][newPos.y]!!.piece = piece
-        if (board!![newPos!!.x, newPos!!.y].piece!!.type == PieceType.KING) {
+        if (board[newPos.x, newPos.y].piece!!.type == PieceType.KING) {
             piece.becomeKing()
         }
     }

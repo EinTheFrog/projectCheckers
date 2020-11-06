@@ -11,44 +11,55 @@ class AI {
         for((piece, turns) in availableTurns) {
             for (moves in turns) {
                 board.makeTurn(Turn(piece, moves))
-                viewedTurns[Turn(piece, moves)] = minimax(board, maximizingColor, DEPTH - 1)
+                viewedTurns[Turn(piece, moves)] = minimax(board, maximizingColor, DEPTH - 1, -BIG_NUMBER, BIG_NUMBER)
                 board.cancelLastTurn()
             }
         }
         //возвращаем самый оптимальный ход
-        return if (board.turnsMade % 2 == maximizingColor)
-            viewedTurns.maxByOrNull { it.value }?.key ?: throw Exception("No turns have left")
+        val isMaximizing = board.turnsMade % 2 == maximizingColor
+        return if (isMaximizing) viewedTurns.maxByOrNull { it.value }?.key ?: throw Exception("No turns have left")
         else viewedTurns.minByOrNull { it.value }?.key ?: throw Exception("No turns have left")
     }
 
-    private fun minimax(board: Board, maximizingColor: Int, depth: Int): Int {
+    private fun minimax(board: Board, maximizingColor: Int, depth: Int, a: Int, b: Int): Int {
         if (depth == 0) {
             return board.getCost(maximizingColor)
         }
         val color = board.turnsMade % 2
+        val isMaximizing = color == maximizingColor
+        var a = a
+        var b = b
 
         val availableTurns = board.getAvailableTurns()
         //если ходов больше нет, то проигрывает тот, у кого нет ходов
         if (availableTurns.isEmpty()) {
-            val maxWinCost = 64 * PieceType.KING.cost - board.turnsMade
-            return if (color == maximizingColor) -maxWinCost else maxWinCost
+            val maxWinCost = BIG_NUMBER - board.turnsMade //чем быстрее победа, тем лучше
+            return if (isMaximizing) -maxWinCost else maxWinCost
         }
 
-        val viewedTurns = mutableListOf<Int>()
+        //val viewedTurns = mutableListOf<Int>()
+        var result = if (isMaximizing) -BIG_NUMBER else +BIG_NUMBER
         for ((piece, turns) in availableTurns) {
             for (moves in turns) {
                 board.makeTurn(Turn(piece, moves))
-                //спускаемся ниже по рекурсии
-                viewedTurns.add(minimax(board, maximizingColor, depth - 1))
+                result = maxOf(minimax(board, maximizingColor, depth - 1, a , b), result)
                 board.cancelLastTurn()
+
+                if (isMaximizing) {
+                    a = maxOf(a, result)
+                } else {
+                    b = minOf(b, result)
+                }
+                if (b <= a) break // если b<=а, то другой игрок не пойдет по данной ветке и дальше можно не смотреть
             }
         }
 
-        return if (color == maximizingColor) viewedTurns.maxOf { it }
-        else viewedTurns.minOf { it }
+        return result
     }
 
     companion object {
         private const val DEPTH = 5
     }
 }
+
+private val BIG_NUMBER = 1024 * PieceType.KING.cost

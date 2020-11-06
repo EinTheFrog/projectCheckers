@@ -43,11 +43,5 @@ class CellView(
         setOnMouseClicked {
             onClick(this)
         }
-        //задаем характеристики фигур при расстановка в зависимости от расположения клетки
-        if (coords.y < 3 && (coords.x + coords.y) % 2 != 0) {
-            piece = PieceView(heightProperty(), widthProperty(), Color.BLACK)
-        } else if (coords.y > 4 && (coords.x + coords.y) % 2 != 0) {
-            piece = PieceView(heightProperty(), widthProperty(), Color.WHITE)
-        }
     }
 }

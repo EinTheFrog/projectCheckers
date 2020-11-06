@@ -9,7 +9,7 @@ import model.PieceType
 import tornadofx.*
 
 /**
- * Хранит логическое предстваление фигуры
+ * Хранит графическое предстваление фигуры
  */
 class PieceView(
         cellHeight: ReadOnlyDoubleProperty,

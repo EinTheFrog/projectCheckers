@@ -6,9 +6,16 @@ import kotlin.IllegalArgumentException
 import kotlin.collections.HashMap
 
 class Board(
-        var turnsMade: Int,
+        turnsMade: Int,
         private val boardArray: Array<Array<Cell>> = Array(8) {i -> Array(8) {j -> Cell(null, Vector(i, j)) } }
 ): Cloneable {
+    var turnsMade = turnsMade
+    set(newVal: Int) {
+        field = newVal
+        for (i in newVal until turns.size) {
+            turns.removeAt(i)
+        }
+    }
     private val turns = mutableListOf<Turn>()
     private val removedPieces = mutableListOf<Piece>()
     private val toKingCount = mutableMapOf<Int, Int>()
