@@ -1,5 +1,6 @@
 package controller
 
+import javafx.concurrent.Task
 import javafx.scene.input.KeyCode
 import model.*
 import tornadofx.Controller
@@ -172,18 +173,25 @@ class MyController: Controller() {
         //последовательно совершаем все ходы ИИ
         for (i in aiTurn.moves.indices) {
             val move = aiTurn.moves[i]
-            if (i > 0) {
-                gameMode = GameMode.PAUSE
-                Thread.sleep(1000)
-                gameMode = GameMode.GAME
+            val mover = object: Task<Unit>() {
+                override fun call() {
+                    if (i > 0) {
+                        gameMode = GameMode.PAUSE
+                        Thread.sleep(500)
+                        gameMode = GameMode.GAME
+                    }
+                }
             }
-            newPos = Vector(aiTurn.piece.pos.x + move.vector.x, aiTurn.piece.pos.y + move.vector.y)
-            if (move.isAttack) {
-                attackWithPiece(move)
+            mover.setOnSucceeded {
+                newPos = Vector(aiTurn.piece.pos.x + move.vector.x, aiTurn.piece.pos.y + move.vector.y)
+                if (move.isAttack) {
+                    attackWithPiece(move)
+                }
+                else {
+                    movePiece(move)
+                }
             }
-            else {
-                movePiece(move)
-            }
+            Thread(mover).start()
         }
 
         if (board!!.getAvailableTurns().isEmpty()) {
