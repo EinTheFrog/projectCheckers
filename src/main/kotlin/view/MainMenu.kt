@@ -1,12 +1,12 @@
 package view
 
-import tornadofx.View
-import tornadofx.button
-import tornadofx.vbox
+import tornadofx.*
 
 class MainMenu: View() {
     override val root = vbox {
+        addClass(Styles.wrapper)
         button {
+            addClass(Styles.alice)
             text = "Play"
             setOnAction { startGame() }
         }
