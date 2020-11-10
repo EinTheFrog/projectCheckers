@@ -36,6 +36,7 @@ class MyController: Controller() {
     var isPlayerTurn = true
     private val ai = AI()
     var gameMode = GameMode.GAME
+    var highLightedCells = listOf<CellView>()
 
     enum class GameMode {
         GAME, MENU, PAUSE
@@ -85,6 +86,28 @@ class MyController: Controller() {
         }
     }
 
+    private fun highLightCells(piece: Piece): List<CellView> {
+        val highlightedCells = mutableListOf<CellView>()
+        val availablePieceMoves = board!!.getAvailableMovesForPiece(piece)
+        val allAvailableMoves = board!!.getAvailableTurns()
+
+        val playerCanAttack = (allAvailableMoves.values.any{
+                    moves -> moves.any{ moveList -> moveList.any{ it.isAttack} }
+                })
+        val currentPieceCanAttack = availablePieceMoves.any{moveList -> moveList.any{ it.isAttack}}
+        if (playerCanAttack && !currentPieceCanAttack) return listOf()
+
+        for (moveList in availablePieceMoves) {
+            val move = moveList.first()
+            val posAfterMove = getMoveCoords(move, piece.pos)
+            boardView!![posAfterMove.x, posAfterMove.y]!!.highlight(true)
+            highlightedCells.add( boardView!![posAfterMove.x, posAfterMove.y]!!)
+        }
+        return highlightedCells
+    }
+
+    private fun getMoveCoords(move: Move, curPos: Vector) = curPos + move.vector
+
     private fun onEsc() {
         when {
             chosenPiece != null -> choosePiece(null, null)
@@ -114,6 +137,11 @@ class MyController: Controller() {
         chosenPiece?.glow(false)
         chosenPiece = piece
         chosenPiece?.glow(true)
+
+        for (cell in highLightedCells) {
+            cell.highlight(false)
+        }
+        highLightedCells = highLightCells(board!![oldPos!!.x, oldPos!!.y].piece!!)
     }
 
     private fun endTurn() {
@@ -123,6 +151,9 @@ class MyController: Controller() {
         //увеличиваем кол-во ходов, обнуляем выбранную фигуру и передаем ход другому игроку
         board!!.turnsMade++
         chosenPiece?.glow(false)
+        for (cell in highLightedCells) {
+            cell.highlight(false)
+        }
         chosenPiece = null
         isPlayerTurn = board!!.turnsMade % 2 == 0
     }
@@ -155,6 +186,10 @@ class MyController: Controller() {
     private fun defineCorrectMove(curPos: Vector, newPos: Vector): Move? = Move.values().find { it.vector ==  newPos - curPos}
 
     private fun playAITurn() {
+        if (gameMode == GameMode.PAUSE) return
+/*        chosenPiece?.glow(false)
+        chosenPiece = null*/
+
         if (gameMode != GameMode.GAME) return
         if (board == null) {
             throw IllegalStateException("Board hasn't been set")
@@ -167,9 +202,6 @@ class MyController: Controller() {
             return
         }
 
-        //выбираем фигуру по ходу ИИ
-        chosenPiece = boardView!![aiTurn.piece.pos.x, aiTurn.piece.pos.y]!!.piece
-        oldPos = aiTurn.piece.pos
         //последовательно совершаем все ходы ИИ
         for (i in aiTurn.moves.indices) {
             val move = aiTurn.moves[i]
@@ -183,6 +215,9 @@ class MyController: Controller() {
                 }
             }
             mover.setOnSucceeded {
+                //выбираем фигуру по ходу ИИ
+                chosenPiece = boardView!![aiTurn.piece.pos.x, aiTurn.piece.pos.y]!!.piece
+                oldPos = aiTurn.piece.pos
                 newPos = Vector(aiTurn.piece.pos.x + move.vector.x, aiTurn.piece.pos.y + move.vector.y)
                 if (move.isAttack) {
                     attackWithPiece(move)

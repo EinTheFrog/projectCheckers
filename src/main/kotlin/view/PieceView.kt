@@ -7,6 +7,7 @@ import javafx.scene.shape.Ellipse
 import model.Piece
 import model.PieceType
 import tornadofx.*
+import tornadofx.CssRule.Companion.c
 
 /**
  * Хранит графическое предстваление фигуры
@@ -14,7 +15,7 @@ import tornadofx.*
 class PieceView(
         cellHeight: ReadOnlyDoubleProperty,
         cellWidth: ReadOnlyDoubleProperty,
-        color: Color,
+        val color: Color,
 ): Pane() {
     private var ellipse = Ellipse()
     private var myColor = Color.BLACK
@@ -32,9 +33,10 @@ class PieceView(
     }
 
     fun glow(bool: Boolean) {
-        val color = if (bool) Color.YELLOW else Color.BLACK
+        val glowColor = if (bool) Color.web("3CC5AC") else color
         ellipse.style {
-            stroke = color
+            stroke = glowColor
+            strokeWidth = 3.px
         }
     }
 

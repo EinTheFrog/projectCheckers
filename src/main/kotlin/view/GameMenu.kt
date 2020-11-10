@@ -3,6 +3,7 @@ package view
 import controller.MyController
 import javafx.scene.input.KeyCode
 import tornadofx.*
+import java.lang.IllegalArgumentException
 
 class GameMenu: View() {
     override val root = vbox {
