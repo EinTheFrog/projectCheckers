@@ -6,6 +6,7 @@ import tornadofx.*
 
 class GameMenu: View() {
     override val root = vbox {
+        addClass(Styles.myMenu)
         button {
             text = "Resume"
             setOnAction {

@@ -4,9 +4,8 @@ import tornadofx.*
 
 class MainMenu: View() {
     override val root = vbox {
-        addClass(Styles.wrapper)
+        addClass(Styles.myMenu)
         button {
-            addClass(Styles.alice)
             text = "Play"
             setOnAction { startGame() }
         }
