@@ -59,12 +59,10 @@ class BoardView(
     }
 
     fun refresh() {
+        board.refresh()
         for (i in 0..7) {
             for (j in 0..7) {
                 removePiece(Vector(i, j))
-                board[i, j].piece = null
-                board.turnsMade = 0
-
                 val cell = cells[i][j]!!
                 if (j < 3 && (i + j) % 2 != 0) {
                     board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), 0, Direction.DOWN)

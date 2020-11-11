@@ -10,7 +10,7 @@ class Board(
         private val boardArray: Array<Array<Cell>> = Array(8) {i -> Array(8) {j -> Cell(null, Vector(i, j)) } }
 ): Cloneable {
     var turnsMade = turnsMade
-    set(newVal: Int) {
+    set(newVal) {
         field = newVal
         for (i in newVal until turns.size) {
             turns.removeAt(i)
@@ -30,6 +30,18 @@ class Board(
             }
         }
         return result
+    }
+
+    fun refresh() {
+        toKingCount.clear()
+        removedPieces.clear()
+        turns.clear()
+        turnsMade = 0
+        for (i in boardArray.indices) {
+            for (j in boardArray.indices) {
+                boardArray[i][j].piece = null
+            }
+        }
     }
 
     fun getAvailableTurns(): Map<Piece, List<List<Move>>> {
