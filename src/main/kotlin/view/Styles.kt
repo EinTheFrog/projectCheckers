@@ -8,6 +8,7 @@ class Styles: Stylesheet() {
     companion object {
         // Define our styles
         val myMenu by cssclass()
+        val options by cssclass()
 
         // Define our colors
         val darkAqua = c("#003C46")
@@ -18,25 +19,33 @@ class Styles: Stylesheet() {
         val ubuntuFont = loadFont("/Ubuntu-Regular.ttf", 20) ?: throw IllegalArgumentException("Invalid font path")
     }
 
+    val myVBox = mixin {
+        padding = box(20.px)
+        spacing = 40.px
+        backgroundColor += standardMint
+        borderColor += box(darkAqua)
+        borderWidth += box(3.0.px)
+    }
+
+    val myText = mixin {
+        font = ubuntuFont
+        textFill = darkAqua
+    }
+
     init {
         val screenSize = Screen.getPrimary().bounds
         val menuWidth = screenSize.width.px / 8
         val menuHeight = screenSize.height.px / 4
         myMenu {
-            padding = box(20.px)
-            spacing = 40.px
+            +myVBox
             prefWidth = menuWidth
             prefHeight = menuHeight
             maxWidth = menuWidth
             maxHeight = menuHeight
-            backgroundColor += standardMint
-            borderColor += box(darkAqua)
-            borderWidth += box(3.0.px)
         }
 
         button {
-            font = ubuntuFont
-            textFill = darkAqua
+            +myText
             maxWidth = infinity
             backgroundColor += standardMint
             borderColor += box(darkAqua)
@@ -49,6 +58,16 @@ class Styles: Stylesheet() {
                 backgroundColor += dirtyMint
                 textFill = brightMint
             }
+        }
+
+        label {
+            +myText
+        }
+
+        options {
+            +myVBox
+            minWidth = menuWidth * 2
+            prefHeight = menuHeight
         }
     }
 }

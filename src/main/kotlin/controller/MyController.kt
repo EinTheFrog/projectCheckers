@@ -68,8 +68,8 @@ class MyController: Controller() {
         if (!isPlayerTurn) return
 
         val piece = cell.piece
-        if (piece != null && board!![cell.coords.x, cell.coords.y].piece!!.color == 0) {
-            //если клетка не пустая и фигура черная (пока игрок может играть только за черных), то выбираем фигуру
+        if (piece != null && board!![cell.coords.x, cell.coords.y].piece!!.color == playerColorInd) {
+            //если клетка не пустая и фигура нужного цвета, то выбираем фигуру
             choosePiece(piece, cell.coords)
         } else if (chosenPiece != null) {//если игрок уже выбрал фигуру, то ходим ей
             highLightForPlayer(false)
@@ -133,7 +133,6 @@ class MyController: Controller() {
 
     private fun openLoseMenu() {
         chosenPiece = null
-        isPlayerTurn = true
         fire(EndGameEvent)
         gameMode = GameMode.MENU
     }
@@ -160,7 +159,7 @@ class MyController: Controller() {
         //увеличиваем кол-во ходов, обнуляем выбранную фигуру и передаем ход другому игроку
         board!!.turnsMade++
         chosenPiece = null
-        isPlayerTurn = board!!.turnsMade % 2 == 0
+        isPlayerTurn = board!!.turnsMade % 2 == playerColorInd
     }
 
     private fun movePiece(move: Move) {

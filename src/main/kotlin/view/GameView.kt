@@ -28,9 +28,13 @@ class GameView: View() {
         }
     }
 
-    fun goToMainMenu() {
+    fun refresh() {
+        controller.isPlayerTurn = playerColorInd == 0
         boardView.refresh()
         controller.gameMode = MyController.GameMode.GAME
+    }
+
+    fun goToMainMenu() {
         replaceWith(find<MainMenu>(), sizeToScene = true, centerOnScreen = true)
         currentWindow?.sizeToScene()
     }

@@ -44,17 +44,23 @@ class BoardView(
                     val color = if ((i + j) % 2 == 0) Color.DARKGRAY else Color.GRAY
                     val cell = CellView(cellHeight, cellWidth, Vector(i, j), color, onCellClick)
                     cells[i][j] = cell
-                    //задаем характеристики фигур при расстановка в зависимости от расположения клетки
-                    if (j < 3 && (i + j) % 2 != 0) {
-                        board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), 0, Direction.DOWN)
-                        cell.piece = PieceView(cell.heightProperty(), cell.widthProperty(), Color.BLACK)
-                    } else if (j > 4 && (i + j) % 2 != 0) {
-                        board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), 1, Direction.UP)
-                        cell.piece = PieceView(cell.heightProperty(), cell.widthProperty(), Color.WHITE)
-                    }
+                    cell.addPieceIfNeeded(i, j)
                     add(cell)
                 }
             }
+        }
+    }
+
+    private fun CellView.addPieceIfNeeded(i: Int, j: Int) {
+        val playerColor = if (playerColorInd == 0) Color.BLACK else Color.WHITE
+        val enemyColor = if (playerColorInd == 0) Color.WHITE else Color.BLACK
+        val enemyColorInd = (playerColorInd + 1) % 2
+        if (j < 3 && (i + j) % 2 != 0) {
+            board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), enemyColorInd, Direction.DOWN)
+            this.piece = PieceView(this.heightProperty(), this.widthProperty(), enemyColor)
+        } else if (j > 4 && (i + j) % 2 != 0) {
+            board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), playerColorInd, Direction.UP)
+            this.piece = PieceView(this.heightProperty(), this.widthProperty(), playerColor)
         }
     }
 
@@ -64,13 +70,7 @@ class BoardView(
             for (j in 0..7) {
                 removePiece(Vector(i, j))
                 val cell = cells[i][j]!!
-                if (j < 3 && (i + j) % 2 != 0) {
-                    board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), 0, Direction.DOWN)
-                    cell.piece = PieceView(cell.heightProperty(), cell.widthProperty(), Color.BLACK)
-                } else if (j > 4 && (i + j) % 2 != 0) {
-                    board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), 1, Direction.UP)
-                    cell.piece = PieceView(cell.heightProperty(), cell.widthProperty(), Color.WHITE)
-                }
+                cell.addPieceIfNeeded(i, j)
             }
         }
     }
@@ -87,7 +87,6 @@ class BoardView(
     fun removePiece(pos: Vector) {
         cells[pos.x][pos.y]!!.piece = null
     }
-
 
     //функции для удобства взаимодействия с клетками поля
     operator fun get(x: Int, y: Int) = cells[x][y]

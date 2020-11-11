@@ -1,5 +1,6 @@
 package view
 
+import controller.MyController
 import tornadofx.*
 
 class MainMenu: View() {
@@ -7,12 +8,20 @@ class MainMenu: View() {
         addClass(Styles.myMenu)
         button {
             text = "Play"
-            setOnAction { startGame() }
+            setOnAction {
+                val gameView = find<GameView>()
+                gameView.refresh()
+                replaceWith(find<GameView>(), sizeToScene = true, centerOnScreen = true)
+                currentWindow?.sizeToScene()
+            }
+        }
+        button {
+            text = "Options"
+            setOnAction {
+                replaceWith(find<OptionsMenu>(), sizeToScene = true, centerOnScreen = true)
+                currentWindow?.sizeToScene()
+            }
         }
     }
 
-    private fun startGame() {
-        replaceWith(find<GameView>(), sizeToScene = true, centerOnScreen = true)
-        currentWindow?.sizeToScene()
-    }
 }
