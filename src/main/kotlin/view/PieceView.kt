@@ -8,6 +8,7 @@ import model.Piece
 import model.PieceType
 import tornadofx.*
 import tornadofx.CssRule.Companion.c
+import java.lang.reflect.InvocationTargetException
 
 /**
  * Хранит графическое предстваление фигуры
@@ -15,7 +16,7 @@ import tornadofx.CssRule.Companion.c
 class PieceView(
         cellHeight: ReadOnlyDoubleProperty,
         cellWidth: ReadOnlyDoubleProperty,
-        val color: Color,
+        private val color: Color,
 ): Pane() {
     private var ellipse = Ellipse()
     private var myColor = Color.BLACK
@@ -38,6 +39,7 @@ class PieceView(
             stroke = glowColor
             strokeWidth = 3.px
         }
+
     }
 
     fun becomeKing() {

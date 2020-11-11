@@ -17,8 +17,8 @@ class AI {
         }
         //возвращаем самый оптимальный ход
         val isMaximizing = board.turnsMade % 2 == maximizingColor
-        return if (isMaximizing) viewedTurns.maxByOrNull { it.value }?.key ?: throw Exception("No turns have left")
-        else viewedTurns.minByOrNull { it.value }?.key ?: throw Exception("No turns have left")
+        return if (isMaximizing) viewedTurns.maxByOrNull { it.value }?.key
+        else viewedTurns.minByOrNull { it.value }?.key
     }
 
     private fun minimax(board: Board, maximizingColor: Int, depth: Int, a: Int, b: Int): Int {

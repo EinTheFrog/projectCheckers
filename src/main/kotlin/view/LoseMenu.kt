@@ -1,12 +1,10 @@
 package view
 
-import tornadofx.View
-import tornadofx.button
-import tornadofx.removeFromParent
-import tornadofx.vbox
+import tornadofx.*
 
 class LoseMenu: View() {
     override val root = vbox {
+        addClass(Styles.myMenu)
         button {
             text = "Main menu"
             setOnAction {
