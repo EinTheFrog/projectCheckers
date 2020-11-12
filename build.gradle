@@ -3,6 +3,7 @@ plugins {
     id 'application'
     id 'org.jetbrains.kotlin.jvm' version '1.4.0'
     id 'org.openjfx.javafxplugin' version '0.0.8'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 group 'org.ein'
@@ -25,11 +26,13 @@ javafx {
     modules = ['javafx.controls', 'javafx.graphics', 'javafx.fxml']
 }
 
-mainClassName  = 'MyApp'
+application {
+    mainClassName  = 'view.LauncherKt'
+}
 
 jar {
     manifest {
-        attributes 'Main-Class': 'MyApp'
+        attributes 'Main-Class': 'view.LauncherKt'
     }
 }
 
