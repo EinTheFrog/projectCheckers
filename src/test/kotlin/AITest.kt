@@ -12,7 +12,7 @@ class AITest {
         board[1, 0].piece = blackChecker
         board[2, 1].piece = whiteChecker
 
-        val turn = ai.makeTurn(board, 1)
+        val turn = ai.makeTurn(board)
         assert(turn == Turn(blackChecker, listOf(Move.ATTACK_DOWN_RIGHT)))
     }
 }

@@ -1,65 +1,65 @@
 package model
 
-import java.lang.Exception
-
 class AI {
-    fun makeTurn(board: Board, maximizingColor: Int): Turn? {
+    fun makeTurn(board: Board): Turn? {
+        val isMaximizing = (board.turnsMade + 1) % 2 == MAXIMIZING_COLOR
         //получаем все возможные ходы для данной ситуации на доске
         val availableTurns = board.getAvailableTurns()
-        //храним ходы и определенную минимаксом конечную ценность доски, к которой они приведут
+        //храним ходы и определенную ab-отсечением конечную ценность доски, к которой они приведут
         val viewedTurns = mutableMapOf<Turn, Int>()
         for((piece, turns) in availableTurns) {
             for (moves in turns) {
                 board.makeTurn(Turn(piece, moves))
-                viewedTurns[Turn(piece, moves)] = minimax(board, maximizingColor, DEPTH - 1, -BIG_NUMBER, BIG_NUMBER)
+                viewedTurns[Turn(piece, moves)] = abSearch(board, isMaximizing, DEPTH - 1, -BIG_NUMBER, BIG_NUMBER)
                 board.cancelLastTurn()
             }
         }
         //возвращаем самый оптимальный ход
-        val isMaximizing = board.turnsMade % 2 == maximizingColor
         return if (isMaximizing) viewedTurns.maxByOrNull { it.value }?.key
         else viewedTurns.minByOrNull { it.value }?.key
     }
 
-    private fun minimax(board: Board, maximizingColor: Int, depth: Int, a: Int, b: Int): Int {
+    private fun abSearch(board: Board, isMaximizing: Boolean, depth: Int, a: Int, b: Int): Int {
         if (depth == 0) {
-            return board.getCost(maximizingColor)
+            return board.getCost(MAXIMIZING_COLOR)
         }
-        val color = board.turnsMade % 2
-        val isMaximizing = color == maximizingColor
         var a = a
         var b = b
 
         val availableTurns = board.getAvailableTurns()
         //если ходов больше нет, то проигрывает тот, у кого нет ходов
         if (availableTurns.isEmpty()) {
-            val maxWinCost = BIG_NUMBER - board.turnsMade //чем быстрее победа, тем лучше
-            return if (isMaximizing) -maxWinCost else maxWinCost
+            val maximizingWinCost = BIG_NUMBER - board.turnsMade //чем быстрее победа, тем лучше
+            return if (isMaximizing) -maximizingWinCost else maximizingWinCost
         }
 
-        //val viewedTurns = mutableListOf<Int>()
-        var result = if (isMaximizing) -BIG_NUMBER else +BIG_NUMBER
-        for ((piece, turns) in availableTurns) {
+        val listOfTurns = availableTurns.toList().toMutableList()
+        if (availableTurns.any{pair -> pair.value.any{list -> list.any{it.isAttack}}}) {
+            listOfTurns.sortBy { (_, turns) -> -turns.maxOf { it.size } }
+        }
+
+        var score = if (isMaximizing) -BIG_NUMBER else BIG_NUMBER
+        outer@ for ((piece, turns) in listOfTurns) {
             for (moves in turns) {
                 board.makeTurn(Turn(piece, moves))
-                result = maxOf(minimax(board, maximizingColor, depth - 1, a , b), result)
-                board.cancelLastTurn()
-
                 if (isMaximizing) {
-                    a = maxOf(a, result)
+                    score = maxOf(abSearch(board, !isMaximizing, depth - 1, a , b), score)
+                    a = maxOf(a, score)
                 } else {
-                    b = minOf(b, result)
+                    score = minOf(abSearch(board, !isMaximizing, depth - 1, a , b), score)
+                    b = minOf(b, score)
                 }
-                if (b <= a) break // если b<=а, то другой игрок не пойдет по данной ветке и дальше можно не смотреть
+                board.cancelLastTurn()
+                if (b <= a) break@outer // если b <= а, то другой игрок не пойдет по данной ветке и дальше можно не смотреть
             }
         }
-
-        return result
+        return score
     }
 
     companion object {
-        private const val DEPTH = 7
+        private const val DEPTH = 9
         private val BIG_NUMBER = 1024 * PieceType.KING.cost
+        private const val MAXIMIZING_COLOR = 1
     }
 }
 
