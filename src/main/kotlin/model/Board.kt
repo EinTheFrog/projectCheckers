@@ -23,12 +23,28 @@ class Board(
         for (i in boardArray.indices) {
             for (j in boardArray[i].indices) {
                 val col = if (boardArray[i][j].piece?.color == maximizingColor) 1 else -1
-                val locCost = boardArray[i][j].piece?.type?.cost ?: 0
-                result += locCost * col
+                val piece = boardArray[i][j].piece
+                val localCost = if (piece != null) piece.type.cost + computeSafetyBonus(piece) else 0
+                result += localCost * col
             }
         }
         return result
     }
+
+    private fun computeSafetyBonus(piece: Piece): Int {
+        var result = 0
+        val pos = piece.pos
+        when {
+            getPieceIfExist(pos.x + 1, pos.y + 1)?.color == piece.color -> result++
+            getPieceIfExist(pos.x - 1, pos.y + 1)?.color == piece.color -> result++
+            getPieceIfExist(pos.x + 1, pos.y - 1)?.color == piece.color -> result++
+            getPieceIfExist(pos.x - 1, pos.y - 1)?.color == piece.color -> result++
+        }
+        return result
+    }
+
+    private fun getPieceIfExist(x: Int, y: Int): Piece? =
+            if (x in boardArray.indices && y in boardArray[x].indices) boardArray[x][y].piece else null
 
     fun refresh() {
         toKingCount.clear()

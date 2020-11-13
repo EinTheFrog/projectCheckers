@@ -4,7 +4,7 @@ import tornadofx.*
 import view.MainMenu
 import view.Styles
 
-fun main(args: Array<String>) {
+fun launchApp(args: Array<String>) {
     launch<MyApp>(args)
 }
 
