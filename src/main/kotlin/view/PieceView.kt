@@ -17,6 +17,7 @@ class PieceView(
         cellHeight: ReadOnlyDoubleProperty,
         cellWidth: ReadOnlyDoubleProperty,
         private val color: Color,
+        val piece: Piece
 ): Pane() {
     private var ellipse = Ellipse()
     private var myColor = Color.BLACK

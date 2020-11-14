@@ -10,7 +10,6 @@ import tornadofx.stackpane
 
 class GameView: View() {
     //создаем контроллер и доску
-    private var board = Board(0)
     private val controller = find<MyController>()
     lateinit var boardView: BoardView
 
@@ -44,9 +43,7 @@ class GameView: View() {
         //которое должно выполнятся при нажатии на клетку
         val pHeight = this.heightProperty()
         val pWidth = this.widthProperty()
-        boardView = BoardView(pHeight, pWidth, board) { cellView -> fire(ClickEvent(cellView)) }
-        //передаем значение boardView контроллеру
-        controller.boardView = boardView
+        boardView = BoardView(pHeight, pWidth, controller.board) { cellView -> fire(ClickEvent(cellView)) }
         //добавляем boardView к корневому элементу
         add(boardView)
         //позволяем фокусироваться на корневом элементе
@@ -66,6 +63,9 @@ class GameView: View() {
         }
         subscribe<RemoveEvent> {
             boardView.removePiece(it.piecePos)
+        }
+        subscribe<ChoosePieceEvent> {
+            boardView.choosePieceView(it.pos)
         }
     }
 }

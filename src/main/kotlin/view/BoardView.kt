@@ -10,6 +10,7 @@ import model.*
 import tornadofx.add
 import tornadofx.gridpane
 import tornadofx.rectangle
+import java.lang.IllegalArgumentException
 
 /**
  * Хранит графическое представление клеток поля и логическое представление доски
@@ -17,11 +18,14 @@ import tornadofx.rectangle
 class BoardView(
         heightProperty: ReadOnlyDoubleProperty,
         widthProperty: ReadOnlyDoubleProperty,
-        val board: Board,
+        private val board: Board,
         onCellClick: (CellView) -> Unit
 ): StackPane() {
-    private val cells = Array(8) {Array<CellView?>(8) {null} }
+    private lateinit var cells: Array<Array<CellView>>
     private val gridPane: GridPane
+    private var chosenPiece: PieceView? = null
+    private val highlightedCells = mutableListOf<CellView>()
+
     init {
         //запрещаем фокусироваться на доску
         isFocusTraversable = true
@@ -39,15 +43,13 @@ class BoardView(
             this.alignment = Pos.CENTER
             val cellHeight = boardHeight.divide(8)
             val cellWidth = boardWidth.divide(8)
-            for (i in 0..7) {
-                for (j in 0..7) {
-                    val color = if ((i + j) % 2 == 0) Color.DARKGRAY else Color.GRAY
-                    val cell = CellView(cellHeight, cellWidth, Vector(i, j), color, onCellClick)
-                    cells[i][j] = cell
-                    cell.addPieceIfNeeded(i, j)
-                    add(cell)
-                }
-            }
+            cells = Array(8) {i -> Array(8) {j ->
+                val color = if ((i + j) % 2 == 0) Color.DARKGRAY else Color.GRAY
+                val cell = CellView(cellHeight, cellWidth, Vector(i, j), color, onCellClick)
+                cell.addPieceIfNeeded(i, j)
+                add(cell)
+                cell
+            } }
         }
     }
 
@@ -56,11 +58,13 @@ class BoardView(
         val enemyColor = if (playerColorInd == 0) Color.WHITE else Color.BLACK
         val enemyColorInd = (playerColorInd + 1) % 2
         if (j < 3 && (i + j) % 2 != 0) {
-            board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), enemyColorInd, Direction.DOWN)
-            this.piece = PieceView(this.heightProperty(), this.widthProperty(), enemyColor)
+            val enemyPiece = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), enemyColorInd, Direction.DOWN)
+            board[i, j] = enemyPiece
+            this.piece = PieceView(this.heightProperty(), this.widthProperty(), enemyColor, enemyPiece)
         } else if (j > 4 && (i + j) % 2 != 0) {
-            board[i, j] = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), playerColorInd, Direction.UP)
-            this.piece = PieceView(this.heightProperty(), this.widthProperty(), playerColor)
+            val playerPiece = Piece(i * 8 + j, PieceType.CHECKER, Vector(i, j), playerColorInd, Direction.UP)
+            board[i, j] = playerPiece
+            this.piece = PieceView(this.heightProperty(), this.widthProperty(), playerColor, playerPiece)
         }
     }
 
@@ -69,29 +73,69 @@ class BoardView(
         for (i in 0..7) {
             for (j in 0..7) {
                 removePiece(Vector(i, j))
-                val cell = cells[i][j]!!
+                val cell = cells[i][j]
                 cell.addPieceIfNeeded(i, j)
             }
         }
     }
 
     fun changePiecePos(oldPos: Vector, newPos: Vector) {
-        val piece = cells[oldPos.x][oldPos.y]!!.piece!!
-        cells[oldPos.x][oldPos.y]!!.piece = null
-        cells[newPos.x][newPos.y]!!.piece = piece
+        val piece = cells[oldPos.x][oldPos.y].piece!!
+        cells[oldPos.x][oldPos.y].piece = null
+        cells[newPos.x][newPos.y].piece = piece
         if (board[newPos.x, newPos.y].piece!!.type == PieceType.KING) {
             piece.becomeKing()
         }
     }
 
     fun removePiece(pos: Vector) {
-        cells[pos.x][pos.y]!!.piece = null
+        cells[pos.x][pos.y].piece = null
     }
+
+    private fun getCellsForHighlight(piece: Piece): List<CellView> {
+        val result = mutableListOf<CellView>()
+        val availablePieceMoves = board.getAvailableMovesForPiece(piece)
+        val allAvailableMoves = board.getAvailableTurns()
+
+        val playerCanAttack = (allAvailableMoves.values.any{
+            moves -> moves.any{ moveList -> moveList.any{ it.isAttack} }
+        })
+        val currentPieceCanAttack = availablePieceMoves.any{moveList -> moveList.any{ it.isAttack}}
+        if (playerCanAttack && !currentPieceCanAttack) return listOf()
+
+        for (moveList in availablePieceMoves) {
+            val move = moveList.first()
+            val posAfterMove = getMoveCoords(move, piece.pos)
+            result.add(this[posAfterMove.x, posAfterMove.y])
+        }
+        return result
+    }
+
+    private fun highLightForPlayer(bool: Boolean) {
+        val usingPiece: PieceView = chosenPiece ?: return
+        usingPiece.glow(bool)
+        for (cell in highlightedCells) {
+            cell.highlight(bool)
+        }
+    }
+
+    fun choosePieceView(pos: Vector?) {
+        highLightForPlayer(false)
+        if (pos == null) return
+        chosenPiece = this[pos.x, pos.y].piece
+
+        val usingPiece: PieceView = chosenPiece ?: return
+        highlightedCells.clear()
+        highlightedCells.addAll(getCellsForHighlight(usingPiece.piece))
+        highLightForPlayer(true)
+    }
+
+    private fun getMoveCoords(move: Move, curPos: Vector) = curPos + move.vector
 
     //функции для удобства взаимодействия с клетками поля
     operator fun get(x: Int, y: Int) = cells[x][y]
 
     operator fun set(x: Int, y: Int, piece: PieceView?) {
-        cells[x][y]!!.piece = piece
+        cells[x][y].piece = piece
     }
 }
