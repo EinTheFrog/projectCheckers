@@ -2,7 +2,7 @@ package model
 
 class AI {
     fun makeTurn(board: Board): Turn? {
-        val isMaximizing = (board.turnsMade + 1) % 2 == MAXIMIZING_COLOR
+        val isMaximizing = board.turnsMade % 2 == MAXIMIZING_COLOR
         //получаем все возможные ходы для данной ситуации на доске
         val availableTurns = board.getAvailableTurns()
         //храним ходы и определенную ab-отсечением конечную ценность доски, к которой они приведут
@@ -57,7 +57,7 @@ class AI {
     }
 
     companion object {
-        private const val DEPTH = 9
+        private const val DEPTH = 8
         private val BIG_NUMBER = 1024 * PieceType.KING.cost
         private const val MAXIMIZING_COLOR = 1
     }

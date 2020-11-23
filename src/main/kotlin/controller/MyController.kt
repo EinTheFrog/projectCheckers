@@ -162,7 +162,7 @@ class MyController: Controller() {
             for (i in aiTurn.moves.indices) {
                 val move = aiTurn.moves[i]
                 if (i > 0) {
-                    Thread .sleep(500)
+                    Thread.sleep(500)
                 }
                 val aiChosenPiecePos = Vector(aiTurn.piece.pos.x, aiTurn.piece.pos.y)
                 choosePiece(aiChosenPiecePos)
